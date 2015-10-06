@@ -1,7 +1,7 @@
-#########################################################################################
-#   An R function to create ideal characteristics table for Zero Chaos requisitions
-#   These R functions are Copyright (C) of Pandera Systems LLP
-#########################################################################################
+###############################################################################################
+#   An R function to create ideal characteristics table for Zero Chaos requisitions           #
+#   These R functions are Copyright (C) of Pandera Systems LLP                                #
+###############################################################################################
 
 library(rmongodb)
 library(plyr)
@@ -11,24 +11,22 @@ source("icc_candilist.r")
 
 icc <- function(ReqId)
 {
-        #print("icc")
     host <- 'devmongo01.zcdev.local:27000'
     db <- "candidate_model"
     username<-"candidateuser"
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     CandidateList <- icc_candilist(ReqId,mongo)
-    #print("return to icc")
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     coll <- "ideal_candidate_characteritics"
     ons <- paste(db,coll,sep=".")
-    coll<-"_requisition_candidate"
+    coll<-"_requisition"
     rcc <- paste(db,coll,sep=".")
     count <- mongo.count(mongo, ins, mongo.bson.empty())
     k<-0
     for(i in 1:length(CandidateList)){
-                buf <- mongo.bson.buffer.create()
+		buf <- mongo.bson.buffer.create()
         T <- mongo.bson.buffer.append(buf,"candidateID",CandidateList[i])
         query <- mongo.bson.from.buffer(buf)
         cursor <- mongo.find(mongo, ins, query,,list(candidateID=1L,parsedWords.word=1L, parsedWords.count=1L))
@@ -37,14 +35,14 @@ icc <- function(ReqId)
                 else{
                         k<-k+1
             for(j in 1:length(temp)){
-                                temp[[j]][1]<-NULL
+                temp[[j]][1]<-NULL
             }
             temp<-ldply (temp, data.frame)
             if(k==1){
-                                res<-temp
+                res<-temp
             }
             else{
-                                res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
+                res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
             }
         }
     }
@@ -77,9 +75,9 @@ icc <- function(ReqId)
     buf <- mongo.bson.buffer.create()
     T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
     query <- mongo.bson.from.buffer(buf)
-    cursor <- mongo.find.one(mongo, rcc, query,list(DataCenter=1L))
+    cursor <- mongo.find.one(mongo, rcc, query,list(data_center=1L))
     data_center<-mongo.bson.to.list(cursor)
-    data_center<-data_center$DataCenter
+    data_center<-data_center$data_center
     buf <- mongo.bson.buffer.create()
     T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
     query <- mongo.bson.from.buffer(buf)

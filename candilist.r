@@ -1,7 +1,7 @@
-#########################################################################################
-#   An R function to retreive relevant candidates for a requisition
-#   These R functions are Copyright (C) of Pandera Systems LLP
-#########################################################################################
+###############################################################################################
+#   An R function to retreive relevant candidates for a requisition                           #
+#   These R functions are Copyright (C) of Pandera Systems LLP                                #
+###############################################################################################
 
 library(rmongodb)
 library(plyr)

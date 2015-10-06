@@ -1,14 +1,15 @@
-#########################################################################################
-#   An R function to calculate the zendex score of candidates for a Zero Chaos requisitions
-#   These R functions are Copyright (C) of Pandera Systems LLP
-#########################################################################################
+###############################################################################################
+#   An R function to calculate the zendex score of candidates for a Zero Chaos requisitions   #
+#   These R functions are Copyright (C) of Pandera Systems LLP                                #
+###############################################################################################
+
 library(rmongodb)
 library(plyr)
 library(reshape2)
 options(warn=-1)
 source("zindex_relevance.r")
 source("zindex_probabilistics.r")
-#source("zendex_exp.r")
+source("zindex_experience.r")
 #source("icc.r")
 #source("insert_zindex.r")
 
@@ -29,36 +30,30 @@ zindex_main<-function(ReqId,Insert='c',...)
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     Cand<-c(...)
-    ## Retreive all inputs here in main##
+	## Getting data from parsed resume##
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     res<-data.frame()
     k<-0
     candnoresume<-integer()
-        ## Getting data from parsed resume##
     for(i in 1:length(Cand)){
-                buf <- mongo.bson.buffer.create()
+        buf <- mongo.bson.buffer.create()
         T <- mongo.bson.buffer.append(buf,"candidateID",Cand[i])
         query <- mongo.bson.from.buffer(buf)
         cursor <- mongo.find(mongo, ins, query,,list(candidateID=1L,parsedWords.word=1L, parsedWords.count=1L))
         temp <- mongo.cursor.to.list(cursor)
         l<-length(temp)
         if(l==0){
-                        k<-k+1
+			k<-k+1
             candnoresume[k]<-Cand[i]
             next
-                }
-                for(j in 1:l){
-                        ##print(i)
-                        #print(j)
-            temp[[j]][1]<-NULL
-                }
-    temp<-ldply (temp, data.frame)
-    #temp<-melt(temp,id="candidateID")
-    #temp<-temp[,c(1,3)]
-    res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
         }
-
+        for(j in 1:l){
+			temp[[j]][1]<-NULL
+        }
+		temp<-ldply (temp, data.frame)
+		res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
+    }
     T1<-ncol(res)
     T1<-T1-1
     T1<-as.integer(T1/2)
@@ -71,21 +66,21 @@ zindex_main<-function(ReqId,Insert='c',...)
     T1<-"parsedWords.word"
     query<-c(T1,query)
     res2 <- melt(res,"candidateID",query,value.name='SkillSet')
-    ##Picks only candidate Id and Skillset
     res2<-res2[,c(1,3)]
     if(length(candnoresume)>=1){
                 candnoresume <- data.frame(candnoresume)
                 colnames(candnoresume)<- 'candidateID'
                 res2<-rbind.fill(res2[colnames(res2)], candnoresume[colnames(candnoresume)])
     }
-    coll <- "_candidate"
+	res2<-res2[complete.cases(res2),]
+    ###Getting data from Candidate collection for skills###
+	coll <- "_candidate"
     ins <- paste(db,coll,sep=".")
     candnoskill<-integer()
     k<-0
     res<-data.frame()
-    ## Getting data from Candidate collection for skills##
     for(i in 1:length(Cand)){
-                buf <- mongo.bson.buffer.create()
+        buf <- mongo.bson.buffer.create()
         T <- mongo.bson.buffer.append(buf,"candidate_id",Cand[i])
         query <- mongo.bson.from.buffer(buf)
         cursor <- mongo.find(mongo, ins, query,,list(candidate_id=1L,job_skill_names.job_skill_name=1L))
@@ -93,12 +88,12 @@ zindex_main<-function(ReqId,Insert='c',...)
         temp2<-unlist(temp)
         l<-length(temp2)
         if(l<=2)
-                {
-                        k<-k+1
+        {
+			k<-k+1
             candnoskill[k]<-as.integer(temp2[2])
             next
-                }
-                l<-length(temp)
+        }
+        l<-length(temp)
         for(j in 1:l){
                         ##print(i)
             #print(j)
@@ -124,14 +119,16 @@ zindex_main<-function(ReqId,Insert='c',...)
         colnames(res)<-c("candidateID","SkillSet")
     }
     res2<-rbind(res2,res)
-    res2<-res2[complete.cases(res2),]
-
+    #res2<-res2[complete.cases(res2),]
+	candskill<-res
     PScore<-zindex_probabilistics(ReqId,mongo,res2)
     RScore<-zindex_relevance(ReqId,mongo,res2)
-        if(RScore=="No Requisition"){
-                return("Not a valid Requisition; Requisition do not have any requirements")
-        }
+    if(RScore=="No Requisition"){
+		return("Not a valid Requisition; Requisition do not have any requirements")
+    }
     Scores<-merge(RScore,PScore,by="Cand")
+	EScore<-zindex_experience(ReqId,mongo,candskill)
+	Scores<-merge(Scores,EScore,by="Cand")
 
     #Scores<-merge(Scores,EScore,by="Cand")
     #coll<-"requisition_candidate"
@@ -143,8 +140,10 @@ zindex_main<-function(ReqId,Insert='c',...)
     #datacenter<-mongo.bson.to.list(cursor)
     ##datacenter<-datacenter$data_center
     #T<-mongo.disconnect(mongo)
-    #insert_zindex(ReqIdScores,datacenter)
+    #insert_zindex(ReqId,Scores,datacenter)
     #return(Scores)
+	
+	##If condition to check insert condition
 
     return(Scores)
 }
