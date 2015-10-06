@@ -6,6 +6,7 @@
 library(rmongodb)
 library(plyr)
 library(reshape2)
+library(stringdist)
 options(warn=-1)
 source("zindex_relevance.r")
 source("zindex_probabilistics.r")

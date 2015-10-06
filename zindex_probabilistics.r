@@ -3,11 +3,6 @@
 #   These R functions are Copyright (C) of Pandera Systems LLP
 ###############################################################################################
 
-library(rmongodb)
-library(plyr)
-library(reshape2)
-options(warn=-1)
-
 zindex_probabilistics <- function(ReqId,mongo,res3)
 {
     db <- "candidate_model"

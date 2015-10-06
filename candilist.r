@@ -3,10 +3,6 @@
 #   These R functions are Copyright (C) of Pandera Systems LLP                                #
 ###############################################################################################
 
-library(rmongodb)
-library(plyr)
-options(warn=-1)
-
 candilist <- function(ReqId,mongo)
 {
     db <- "candidate_model"

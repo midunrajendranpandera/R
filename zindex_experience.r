@@ -3,12 +3,6 @@
 #   These R functions are Copyright (C) of Pandera Systems LLP                                #
 ###############################################################################################
 
-options(warn=-1) 
-library(rmongodb)
-library(plyr)
-library(reshape2)
-library(stringdist)
-source("candilist.r")
 
 zindex_experience <- function(ReqId,mongo,canskill)
 {
@@ -141,6 +135,3 @@ zindex_experience <- function(ReqId,mongo,canskill)
 	remove(coll,ins1,buf,T,query,cursor,res,T1,query1,query2,i,j,reqskill,vars,res2,reqs,reqskill,ins,res,k,temp,candnoresume,res2,res2.sub,reqskill.sub,res3,len,candskill,levels,Temp,EScore)
 	return(Scores)
 }
-	
-	
-	

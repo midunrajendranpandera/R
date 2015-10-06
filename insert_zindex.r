@@ -1,4 +1,3 @@
-
 ###############################################################################################
 #   An R function to insert the zendex score of candidates for a Zero Chaos requisitions      #
 #   These R functions are Copyright (C) of Pandera Systems LLP                                #

@@ -4,10 +4,6 @@
 ###############################################################################################
 
 
-library(rmongodb)
-library(plyr)
-library(reshape2)
-options(warn=-1)
 zindex_relevance <- function(ReqId,mongo,res3)
 {
     db <- "candidate_model"

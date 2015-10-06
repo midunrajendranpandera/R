@@ -3,9 +3,6 @@
 #   These R functions are Copyright (C) of Pandera Systems LLP                                #
 ###############################################################################################
 
-library(rmongodb)
-library(plyr)
-options(warn=-1)
 source('candilist.r')
 
 icc_candilist <- function(ReqId,mongo)
