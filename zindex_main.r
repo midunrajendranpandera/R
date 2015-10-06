@@ -10,26 +10,26 @@ options(warn=-1)
 source("zindex_relevance.r")
 source("zindex_probabilistics.r")
 source("zindex_experience.r")
-#source("icc.r")
-#source("insert_zindex.r")
+source("icc.r")
+source("insert_zindex.r")
 
 zindex_main<-function(ReqId,Insert='c',...)
 {
-    ## Function that creates the Ideal Charact Table
-    ## If not created
-    ##icc(ReqId)
-    ## Function that calculates the relevance score
-    ##RScores<-zendex_relevance(ReqId)
-    ## Function that calculates the experience score
-    ##EScores<-zendex_experience(ReqId)
-    ## Function that calculate the probabilistics score
-
     host <- 'devmongo01.zcdev.local:27000'
     db <- "candidate_model"
     username<-"candidateuser"
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     Cand<-c(...)
+	coll <- "ideal_candidate_characteritics"
+    idealcoll <- paste(db,coll,sep=".")
+	buf <- mongo.bson.buffer.create()
+    T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
+    query <- mongo.bson.from.buffer(buf)
+	count<-mongo.count(mongo,idealcoll,query)
+	if(count==0){
+		Status<-icc(ReqId)
+	}
 	## Getting data from parsed resume##
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
@@ -121,29 +121,29 @@ zindex_main<-function(ReqId,Insert='c',...)
     res2<-rbind(res2,res)
     #res2<-res2[complete.cases(res2),]
 	candskill<-res
-    PScore<-zindex_probabilistics(ReqId,mongo,res2)
     RScore<-zindex_relevance(ReqId,mongo,res2)
-    if(RScore=="No Requisition"){
+	if(RScore=="No Requisition"){
 		return("Not a valid Requisition; Requisition do not have any requirements")
     }
-    Scores<-merge(RScore,PScore,by="Cand")
+	if(Status!="Success"){
+		Scores<-RScore
+		Scores$PScore<-0
+	}
+	else{
+		PScore<-zindex_probabilistics(ReqId,mongo,res2)
+        Scores<-merge(RScore,PScore,by="Cand")
+	}
 	EScore<-zindex_experience(ReqId,mongo,candskill)
-	Scores<-merge(Scores,EScore,by="Cand")
-
-    #Scores<-merge(Scores,EScore,by="Cand")
-    #coll<-"requisition_candidate"
-    ####ins <- paste(db,coll,sep=".")
-    #buf <- mongo.bson.buffer.create()
-    #T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
-    ##query <- mongo.bson.from.buffer(buf)
-    #cursor <- mongo.find.one(mongo, ins, query,list(data_center=1L))
-    #datacenter<-mongo.bson.to.list(cursor)
-    ##datacenter<-datacenter$data_center
-    #T<-mongo.disconnect(mongo)
-    #insert_zindex(ReqId,Scores,datacenter)
-    #return(Scores)
-	
-	##If condition to check insert condition
-
-    return(Scores)
+	Scores<-merge(Scores,EScore,by="Cand")	
+	##Condition to check insert condition
+	if(Insert=='c' | Insert=='C'){
+		insert_zindex(ReqId,Scores,mongo)
+		return("Scores Inserted")
+	}
+	else if(Insert=='r' | Insert=='R'){
+		return(Scores)
+	}
+    else{
+		return("Unknown Insert/Return condition")
+	}
 }

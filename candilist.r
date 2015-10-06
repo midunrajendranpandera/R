@@ -17,7 +17,12 @@ candilist <- function(ReqId,mongo)
     query <- mongo.bson.from.buffer(buf)
     cursor <- mongo.find(mongo, ins, query,,list(candidate_id=1L))
     candidateid<-mongo.cursor.to.data.frame(cursor)
-    candidateid<-as.integer(candidateid[,1])
+    T<-nrow(candidateid)
+	if(T==0){
+		remove(host,db,ins,coll,query,cursor)
+		return("No Candidates")	
+	}
+	candidateid<-as.integer(candidateid[,1])
     candidateid<-unique(candidateid)
     remove(host,db,ins,coll,query,cursor)
     return(candidateid)

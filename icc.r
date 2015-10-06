@@ -17,6 +17,9 @@ icc <- function(ReqId)
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     CandidateList <- icc_candilist(ReqId,mongo)
+	if(CandidateList=="No Relevant Profile Available"){
+	return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")
+	}
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     coll <- "ideal_candidate_characteritics"
@@ -87,5 +90,6 @@ icc <- function(ReqId)
     Out <- mongo.bson.from.list(list(requisition_id=ReqId,Region=data_center,Skills=Skills))
     Insert <- mongo.insert(mongo,ons,Out)
     ok <- mongo.disconnect(mongo)
+	return("Success")
     remove(host,db,mongo,coll,ins,ons,buf,cursor,query,res,T1,res2,T,Skills,Out,ok,i,j,k)
 }
