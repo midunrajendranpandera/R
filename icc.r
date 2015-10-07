@@ -28,15 +28,17 @@ icc <- function(ReqId)
     rcc <- paste(db,coll,sep=".")
     count <- mongo.count(mongo, ins, mongo.bson.empty())
     k<-0
+	res<-data.frame()
     for(i in 1:length(CandidateList)){
 		buf <- mongo.bson.buffer.create()
         T <- mongo.bson.buffer.append(buf,"candidateID",CandidateList[i])
         query <- mongo.bson.from.buffer(buf)
         cursor <- mongo.find(mongo, ins, query,,list(candidateID=1L,parsedWords.word=1L, parsedWords.count=1L))
         temp <- mongo.cursor.to.list(cursor)
-        if(length(temp)==0){next}
-                else{
-                        k<-k+1
+		temp2<-unlist(temp)
+        if(length(temp2)<=2){next}
+        else{
+			k<-k+1
             for(j in 1:length(temp)){
                 temp[[j]][1]<-NULL
             }
@@ -49,6 +51,7 @@ icc <- function(ReqId)
             }
         }
     }
+	if(k==0){return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")}
     T1<-ncol(res)
     T1<-T1-1
     T1<-as.integer(T1/2)
