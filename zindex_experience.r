@@ -4,7 +4,7 @@
 ###############################################################################################
 
 
-zindex_experience <- function(ReqId,mongo,canskill)
+zindex_experience <- function(ReqId,mongo,canskill,Cand)
 {
 	##Getting skills data from Requisition parsed collection##################
 	db <- "candidate_model"
@@ -43,7 +43,7 @@ zindex_experience <- function(ReqId,mongo,canskill)
 		reqs<-as.character(res2[,3])
 		reqskill<-reqs
 	}
-	else{
+	if(11==0){
 		reqskill<-melt(res,"requisitionId",query1,value.name="SkillSet")
 		reqskill<-as.character(reqskill[,3])
 	}

@@ -13,6 +13,7 @@ source("zindex_probabilistics.r")
 source("zindex_experience.r")
 source("icc.r")
 source("insert_zindex.r")
+source("return_zindex.r")
 
 zindex_main<-function(ReqId,Insert='c',...)
 {
@@ -22,6 +23,7 @@ zindex_main<-function(ReqId,Insert='c',...)
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     Cand<-c(...)
+	Cand<-unlist(Cand)
 	coll <- "ideal_candidate_characteritics"
     idealcoll <- paste(db,coll,sep=".")
 	buf <- mongo.bson.buffer.create()
@@ -129,12 +131,12 @@ zindex_main<-function(ReqId,Insert='c',...)
 	PScore<-zindex_probabilistics(ReqId,mongo,res2)
 	if(PScore=="No Ideal Table"){
 		Scores<-RScore
-		Scores$PScore<-0
+		Scoretemp<-Scores
+		Scoretemp$PScore<-0
+		PScore<-subset(Scoretemp,select=c(Cand,PScore))
 	}
-	else{
-	    Scores<-merge(RScore,PScore,by="Cand")
-	}	
-    EScore<-zindex_experience(ReqId,mongo,candskill)
+	Scores<-merge(RScore,PScore,by="Cand")	
+    EScore<-zindex_experience(ReqId,mongo,candskill,Cand)
 	Scores<-merge(Scores,EScore,by="Cand")	
 	##Condition to check insert condition
 	if(Insert=='c' | Insert=='C'){
@@ -142,7 +144,8 @@ zindex_main<-function(ReqId,Insert='c',...)
 		return("Scores Inserted")
 	}
 	else if(Insert=='r' | Insert=='R'){
-		return(Scores)
+		ScoresJ<-return_zindex(ReqId,Scores)
+		return(ScoresJ)
 	}
     else{
 		return("Unknown Insert/Return condition")
