@@ -126,15 +126,15 @@ zindex_main<-function(ReqId,Insert='c',...)
 	if(RScore=="No Requisition"){
 		return("Not a valid Requisition; Requisition do not have any requirements")
     }
-	if(Status!="Success"){
+	PScore<-zindex_probabilistics(ReqId,mongo,res2)
+	if(PScore=="No Ideal Table"){
 		Scores<-RScore
 		Scores$PScore<-0
 	}
 	else{
-		PScore<-zindex_probabilistics(ReqId,mongo,res2)
-        Scores<-merge(RScore,PScore,by="Cand")
-	}
-	EScore<-zindex_experience(ReqId,mongo,candskill)
+	    Scores<-merge(RScore,PScore,by="Cand")
+	}	
+    EScore<-zindex_experience(ReqId,mongo,candskill)
 	Scores<-merge(Scores,EScore,by="Cand")	
 	##Condition to check insert condition
 	if(Insert=='c' | Insert=='C'){
