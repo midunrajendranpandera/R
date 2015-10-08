@@ -7,10 +7,10 @@ source('candilist.r')
 
 icc_candilist <- function(ReqId,mongo)
 {
-    coll<-"_requisition_candidate"
+    coll<-"requisition_candidate"
     db <- "candidate_model"
     ins1 <- paste(db,coll,sep=".")
-    coll<-"_requisition"
+    coll<-"requisition"
     ins <- paste(db,coll,sep=".")
     buf <- mongo.bson.buffer.create()
     T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
@@ -48,10 +48,10 @@ icc_candilist <- function(ReqId,mongo)
     if (k==0){
                 candidateid <- candilist(ReqId,mongo)
     }
-	if(candidateid=="No Candidates"){
-		remove(host,db,ins,coll,query,cursor,ins1,candid,k,count,jobid,reqid,i,T,candid,buf,k)
-		return("No Relevant Profile Available")
-	}
+        if(candidateid=="No Candidates"){
+                remove(host,db,ins,coll,query,cursor,ins1,candid,k,count,jobid,reqid,i,T,candid,buf,k)
+                return("No Relevant Profile Available")
+        }
     remove(host,db,ins,coll,query,cursor,ins1,candid,k,count,jobid,reqid,i,T,candid,buf,k)
     return(candidateid)
 }

@@ -35,7 +35,7 @@ zindex_relevance <- function(ReqId,mongo,res3)
     query<-c(T1,query)
     reqskill<-melt(reqskill,"requisitionId",query,value.name='Skill')
     reqskill <- as.data.frame(reqskill[,3])
-    coll <- "_requisition"
+    coll <- "requisition"
     ins <- paste(db,coll,sep=".")
     res<-data.frame()
     buf <- mongo.bson.buffer.create()
@@ -46,11 +46,11 @@ zindex_relevance <- function(ReqId,mongo,res3)
     temp2<-unlist(temp)
     ll<-length(temp2)
     if(ll>2){
-		l<-length(temp)
+                l<-length(temp)
         for(j in 1:l){
-			temp[[j]][1]<-NULL
+                        temp[[j]][1]<-NULL
         }
-		temp<-ldply (temp, data.frame)
+                temp<-ldply (temp, data.frame)
         temp<-melt(temp,id="requisition_id",value.name='Skill')
         Skill<-data.frame(temp[,3])
         colnames(Skill)<-"reqskill[, 3]"

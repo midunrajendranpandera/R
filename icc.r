@@ -17,28 +17,28 @@ icc <- function(ReqId)
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     CandidateList <- icc_candilist(ReqId,mongo)
-	if(CandidateList=="No Relevant Profile Available"){
-	return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")
-	}
+        if(CandidateList=="No Relevant Profile Available"){
+        return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")
+        }
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     coll <- "ideal_candidate_characteritics"
     ons <- paste(db,coll,sep=".")
-    coll<-"_requisition"
+    coll<-"requisition"
     rcc <- paste(db,coll,sep=".")
     count <- mongo.count(mongo, ins, mongo.bson.empty())
     k<-0
-	res<-data.frame()
+        res<-data.frame()
     for(i in 1:length(CandidateList)){
-		buf <- mongo.bson.buffer.create()
+                buf <- mongo.bson.buffer.create()
         T <- mongo.bson.buffer.append(buf,"candidateID",CandidateList[i])
         query <- mongo.bson.from.buffer(buf)
         cursor <- mongo.find(mongo, ins, query,,list(candidateID=1L,parsedWords.word=1L, parsedWords.count=1L))
         temp <- mongo.cursor.to.list(cursor)
-		temp2<-unlist(temp)
+                temp2<-unlist(temp)
         if(length(temp2)<=2){next}
         else{
-			k<-k+1
+                        k<-k+1
             for(j in 1:length(temp)){
                 temp[[j]][1]<-NULL
             }
@@ -51,7 +51,7 @@ icc <- function(ReqId)
             }
         }
     }
-	if(k==0){return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")}
+        if(k==0){return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")}
     T1<-ncol(res)
     T1<-T1-1
     T1<-as.integer(T1/2)
@@ -93,6 +93,6 @@ icc <- function(ReqId)
     Out <- mongo.bson.from.list(list(requisition_id=ReqId,Region=data_center,Skills=Skills))
     Insert <- mongo.insert(mongo,ons,Out)
     ok <- mongo.disconnect(mongo)
-	return("Success")
+        return("Success")
     remove(host,db,mongo,coll,ins,ons,buf,cursor,query,res,T1,res2,T,Skills,Out,ok,i,j,k)
 }

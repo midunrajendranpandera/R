@@ -23,17 +23,17 @@ zindex_main<-function(ReqId,Insert='c',...)
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
     Cand<-c(...)
-	Cand<-unlist(Cand)
-	coll <- "ideal_candidate_characteritics"
+        Cand<-unlist(Cand)
+        coll <- "ideal_candidate_characteritics"
     idealcoll <- paste(db,coll,sep=".")
-	buf <- mongo.bson.buffer.create()
+        buf <- mongo.bson.buffer.create()
     T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
     query <- mongo.bson.from.buffer(buf)
-	count<-mongo.count(mongo,idealcoll,query)
-	if(count==0){
-		Status<-icc(ReqId)
-	}
-	## Getting data from parsed resume##
+        count<-mongo.count(mongo,idealcoll,query)
+        if(count==0){
+                Status<-icc(ReqId)
+        }
+        ## Getting data from parsed resume##
     coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     res<-data.frame()
@@ -47,15 +47,15 @@ zindex_main<-function(ReqId,Insert='c',...)
         temp <- mongo.cursor.to.list(cursor)
         l<-length(temp)
         if(l==0){
-			k<-k+1
+                        k<-k+1
             candnoresume[k]<-Cand[i]
             next
         }
         for(j in 1:l){
-			temp[[j]][1]<-NULL
+                        temp[[j]][1]<-NULL
         }
-		temp<-ldply (temp, data.frame)
-		res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
+                temp<-ldply (temp, data.frame)
+                res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
     }
     T1<-ncol(res)
     T1<-T1-1
@@ -75,9 +75,9 @@ zindex_main<-function(ReqId,Insert='c',...)
                 colnames(candnoresume)<- 'candidateID'
                 res2<-rbind.fill(res2[colnames(res2)], candnoresume[colnames(candnoresume)])
     }
-	res2<-res2[complete.cases(res2),]
+        res2<-res2[complete.cases(res2),]
     ###Getting data from Candidate collection for skills###
-	coll <- "_candidate"
+        coll <- "candidate"
     ins <- paste(db,coll,sep=".")
     candnoskill<-integer()
     k<-0
@@ -92,7 +92,7 @@ zindex_main<-function(ReqId,Insert='c',...)
         l<-length(temp2)
         if(l<=2)
         {
-			k<-k+1
+                        k<-k+1
             candnoskill[k]<-as.integer(temp2[2])
             next
         }
@@ -123,31 +123,31 @@ zindex_main<-function(ReqId,Insert='c',...)
     }
     res2<-rbind(res2,res)
     #res2<-res2[complete.cases(res2),]
-	candskill<-res
+        candskill<-res
     RScore<-zindex_relevance(ReqId,mongo,res2)
-	if(RScore=="No Requisition"){
-		return("Not a valid Requisition; Requisition do not have any requirements")
+        if(RScore=="No Requisition"){
+                return("Not a valid Requisition; Requisition do not have any requirements")
     }
-	PScore<-zindex_probabilistics(ReqId,mongo,res2)
-	if(PScore=="No Ideal Table"){
-		Scores<-RScore
-		Scoretemp<-Scores
-		Scoretemp$PScore<-0
-		PScore<-subset(Scoretemp,select=c(Cand,PScore))
-	}
-	Scores<-merge(RScore,PScore,by="Cand")	
+        PScore<-zindex_probabilistics(ReqId,mongo,res2)
+        if(PScore=="No Ideal Table"){
+                Scores<-RScore
+                Scoretemp<-Scores
+                Scoretemp$PScore<-0
+                PScore<-subset(Scoretemp,select=c(Cand,PScore))
+        }
+        Scores<-merge(RScore,PScore,by="Cand")
     EScore<-zindex_experience(ReqId,mongo,candskill,Cand)
-	Scores<-merge(Scores,EScore,by="Cand")	
-	##Condition to check insert condition
-	if(Insert=='c' | Insert=='C'){
-		insert_zindex(ReqId,Scores,mongo)
-		return("Scores Inserted")
-	}
-	else if(Insert=='r' | Insert=='R'){
-		ScoresJ<-return_zindex(ReqId,Scores)
-		return(ScoresJ)
-	}
+        Scores<-merge(Scores,EScore,by="Cand")
+        ##Condition to check insert condition
+        if(Insert=='c' | Insert=='C'){
+                insert_zindex(ReqId,Scores,mongo)
+                return("Scores Inserted")
+        }
+        else if(Insert=='r' | Insert=='R'){
+                ScoresJ<-return_zindex(ReqId,Scores)
+                return(ScoresJ)
+        }
     else{
-		return("Unknown Insert/Return condition")
-	}
+                return("Unknown Insert/Return condition")
+        }
 }
