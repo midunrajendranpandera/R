@@ -8,15 +8,15 @@ zindex_probabilistics <- function(ReqId,mongo,res3)
     db <- "candidate_model"
     coll <- "ideal_candidate_characteritics"
     ins1 <- paste(db,coll,sep=".")
-	res<-list()
+        res<-list()
     buf <- mongo.bson.buffer.create()
     T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
     query <- mongo.bson.from.buffer(buf)
     cursor <- mongo.find(mongo, ins1, query,,list(Skills=1L))
     res <- mongo.cursor.to.list(cursor)
-	if(length(res)==0){
-		return("No Ideal Table")
-	}
+        if(length(res)==0){
+                return("No Ideal Table")
+        }
     for(i in 1:length(res)){
                 res[[i]][1]<-NULL
     }
@@ -28,7 +28,7 @@ zindex_probabilistics <- function(ReqId,mongo,res3)
     levels<-max(rank(Cand))
     PScore<-integer()
     for(i in 1:levels){
-		Temp <- res3[res3$candidateID==Cand[i],]
+                Temp <- res3[res3$candidateID==Cand[i],]
         T <- Temp[,2]
         T<- as.data.frame(table(T))
         T <- arrange(T,desc(Freq))

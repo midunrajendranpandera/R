@@ -31,7 +31,7 @@ zindex_main<-function(ReqId,Insert='c',...)
     query <- mongo.bson.from.buffer(buf)
     count<-mongo.count(mongo,idealcoll,query)
     if(count==0){
-		Status<-icc(ReqId)
+                Status<-icc(ReqId)
     }
     ## Getting data from parsed resume##
     coll <- "candidate_skills_from_parsed_resumes"
@@ -46,7 +46,9 @@ zindex_main<-function(ReqId,Insert='c',...)
         cursor <- mongo.find(mongo, ins, query,,list(candidateID=1L,parsedWords.word=1L, parsedWords.count=1L))
         temp <- mongo.cursor.to.list(cursor)
         l<-length(temp)
-        if(l==0){
+                temp2<-unlist(temp)
+                ll<-length(temp2)
+        if(l==0 | ll==2){
                         k<-k+1
             candnoresume[k]<-Cand[i]
             next
@@ -57,35 +59,35 @@ zindex_main<-function(ReqId,Insert='c',...)
                 temp<-ldply (temp, data.frame)
                 res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
     }
-	canlen<-length(res)
-	res2<-data.frame()
-	if(canlen!=0){
-		
-		T1<-ncol(res)
-		T1<-T1-1
-		T1<-as.integer(T1/2)
-		T1<-T1-1
-		query<-character()
-		for(i in 1:T1){
-            c<-paste("parsedWords.word",i,sep=".")
-			query[i]<-c
-		}
-		T1<-"parsedWords.word"
-		query<-c(T1,query)
-		res2 <- melt(res,"candidateID",query,value.name='SkillSet')
-		res2<-res2[,c(1,3)]
-	}
-    
-    if(length(candnoresume)>=1){
-		candnoresume <- data.frame(candnoresume)
-		colnames(candnoresume)<- 'candidateID'
-		if(canlen==0){
-			res2<-candnoresume
-			res2$SkillSet<-"NA"
-		}
+        canlen<-length(res)
+        res2<-data.frame()
         if(canlen!=0){
-			res2<-rbind.fill(res2[colnames(res2)], candnoresume[colnames(candnoresume)])
-		}
+
+                T1<-ncol(res)
+                T1<-T1-1
+                T1<-as.integer(T1/2)
+                T1<-T1-1
+                query<-character()
+                for(i in 1:T1){
+            c<-paste("parsedWords.word",i,sep=".")
+                        query[i]<-c
+                }
+                T1<-"parsedWords.word"
+                query<-c(T1,query)
+                res2 <- melt(res,"candidateID",query,value.name='SkillSet')
+                res2<-res2[,c(1,3)]
+        }
+
+    if(length(candnoresume)>=1){
+                candnoresume <- data.frame(candnoresume)
+                colnames(candnoresume)<- 'candidateID'
+                if(canlen==0){
+                        res2<-candnoresume
+                        res2$SkillSet<-"NA"
+                }
+        if(canlen!=0){
+                        res2<-rbind.fill(res2[colnames(res2)], candnoresume[colnames(candnoresume)])
+                }
     }
     ###Getting data from Candidate collection for skills###
     coll <- "candidate"
@@ -121,7 +123,7 @@ zindex_main<-function(ReqId,Insert='c',...)
     if(nrow(res)!=0){
         colnames(res)<-c("candidateID","SkillSet")
         if(length(candnoskill)>=1){
-			candnoskill <- data.frame(candnoskill)
+                        candnoskill <- data.frame(candnoskill)
             colnames(candnoskill)<- 'candidateID'
             res<-rbind.fill(res[colnames(res)], candnoskill[colnames(candnoskill)])
         }
@@ -137,11 +139,11 @@ zindex_main<-function(ReqId,Insert='c',...)
     candskill<-res
     RScore<-zindex_relevance(ReqId,mongo,res2)
     if(RScore=="No Requisition"){
-		return("Not a valid Requisition; Requisition do not have any requirements")
+                return("Not a valid Requisition; Requisition do not have any requirements")
     }
     PScore<-zindex_probabilistics(ReqId,mongo,res2)
     if(PScore=="No Ideal Table"){
-		Scores<-RScore
+                Scores<-RScore
         Scoretemp<-Scores
         Scoretemp$PScore<-0
         PScore<-subset(Scoretemp,select=c(Cand,PScore))
@@ -151,14 +153,14 @@ zindex_main<-function(ReqId,Insert='c',...)
     Scores<-merge(Scores,EScore,by="Cand")
     ##Condition to check insert condition
     if(Insert=='c' | Insert=='C'){
-		insert_zindex(ReqId,Scores,mongo)
+                insert_zindex(ReqId,Scores,mongo)
         return("Scores Inserted")
     }
     else if(Insert=='r' | Insert=='R'){
-		ScoresJ<-return_zindex(ReqId,Scores)
+                ScoresJ<-return_zindex(ReqId,Scores)
         return(ScoresJ)
     }
     else{
-		return("Unknown Insert/Return condition")
+                return("Unknown Insert/Return condition")
         }
 }

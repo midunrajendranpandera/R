@@ -27,10 +27,12 @@ zindex_relevance <- function(ReqId,mongo,res3)
     T1<-ncol(reqskill)
     T1<-T1-2
     query<-character()
-    for(i in 1:T1){
-                c<-paste("parsedWords.word",i,sep=".")
-        query[i]<-c
-    }
+        if(T1!=0){
+                for(i in 1:T1){
+                        c<-paste("parsedWords.word",i,sep=".")
+                        query[i]<-c
+                }
+        }
     T1<-"parsedWords.word"
     query<-c(T1,query)
     reqskill<-melt(reqskill,"requisitionId",query,value.name='Skill')

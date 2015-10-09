@@ -11,7 +11,7 @@ coll<-"requisition_candidate"
 ins <- paste(db,coll,sep=".")
 a<-mongo.distinct(mongo,ins,"requisition_id")
 l<-length(a)
-for(m in 49:l){
+for(m in 1598:l){
 print(m)
 print(a[m])
 icc(a[m])

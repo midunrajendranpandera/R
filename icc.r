@@ -16,16 +16,32 @@ icc <- function(ReqId)
     username<-"candidateuser"
     password<-"bdrH94b9tanQ"
     mongo <- mongo.create(host=host, db= db,username=username,password=password)
-    CandidateList <- icc_candilist(ReqId,mongo)
-        if(CandidateList=="No Relevant Profile Available"){
-        return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")
-        }
-    coll <- "candidate_skills_from_parsed_resumes"
+        coll <- "candidate_skills_from_parsed_resumes"
     ins <- paste(db,coll,sep=".")
     coll <- "ideal_candidate_characteritics"
     ons <- paste(db,coll,sep=".")
     coll<-"requisition"
     rcc <- paste(db,coll,sep=".")
+    CandidateList <- icc_candilist(ReqId,mongo)
+    if(CandidateList=="No Relevant Profile Available"){
+                buf <- mongo.bson.buffer.create()
+                T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
+                query <- mongo.bson.from.buffer(buf)
+                cursor <- mongo.find.one(mongo, rcc, query,list(data_center=1L))
+                data_center<-mongo.bson.to.list(cursor)
+                data_center<-data_center$data_center
+                buf <- mongo.bson.buffer.create()
+                T <- mongo.bson.buffer.append(buf,"requisition_id",ReqId)
+                query <- mongo.bson.from.buffer(buf)
+                count <- mongo.count(mongo, ons, query)
+                if(count>=1) {T<-mongo.remove(mongo,ons,query)}
+                ReqId<-as.integer(ReqId)
+                Out <- mongo.bson.from.list(list(requisition_id=ReqId,Region=data_center,Skills="No Skills"))
+                Insert <- mongo.insert(mongo,ons,Out)
+                ok <- mongo.disconnect(mongo)
+        return("No Relevant Profile Available; Unable to create Ideal Characteristics Table")
+    }
+
     count <- mongo.count(mongo, ins, mongo.bson.empty())
     k<-0
         res<-data.frame()
