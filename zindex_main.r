@@ -31,12 +31,9 @@ zindex_main<-function(ReqId,Insert='c',...)
     query <- mongo.bson.from.buffer(buf)
     cursor <- mongo.find(mongo, ins1, query,,list(requisitionId=1L,parsedWords.word=1L))
     temp <- mongo.cursor.to.list(cursor)
-    for(i in 1:length(temp)){
-                temp[[i]][1]<-NULL
-    }
-    temp2<-unlist(temp)
+     temp2<-unlist(temp)
     l<-length(temp2)
-    if(l<=1){
+	if(l<=1 | length(temp)==0){
                 
 		score<-data.frame(Cand)
 		score$RScore<-0
@@ -78,7 +75,33 @@ zindex_main<-function(ReqId,Insert='c',...)
 	mongo.bson.buffer.finish.object(buf)
 	CandQuery <- mongo.bson.from.buffer(buf)
 	cursor <- mongo.find(mongo, ins, CandQuery,,list(candidateID=1L,parsedWords.word=1L, parsedWords.interpreter_value=1L))
-	res<- mongo.cursor.to.data.frame(cursor)
+	#res<- mongo.cursor.to.data.frame(cursor)
+	
+	reslist <- mongo.cursor.to.list(cursor)
+	if(length(reslist)==0){
+		score<-data.frame(Cand)
+		score$RScore<-0
+		score$PScore<-0
+		score$EScore<-0
+		ScoresJ<-return_zindex(ReqId,score)
+		return(ScoresJ)
+	}
+	for(m in 1:length(reslist)){
+		temp<-reslist[m]
+		l<-length(temp)
+		temp2<-unlist(temp)
+		ll<-length(temp2)
+		if(l==0 | ll==2){
+			next
+		}
+		for(j in 1:l){
+			temp[[j]][1]<-NULL
+		}
+		temp<-ldply (temp, data.frame)
+		res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
+	}
+
+	
 	if(nrow(res)<=1){
                 
 		score<-data.frame(Cand)
