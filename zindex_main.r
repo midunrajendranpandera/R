@@ -152,7 +152,7 @@ zindex_main<-function(ReqId,Insert='c',...)
 		if(length(CandNoResume)!=0){
 			CandNoResume<-data.frame(CandNoResume)
 			colnames(CandNoResume)<- 'candidateID'
-			res2$SkillSet<-"NA"
+			CandNoResume$SkillSet<-"NA"
 			CanSkill<-rbind.fill(CanSkill[colnames(CanSkill)], CandNoResume[colnames(CandNoResume)])
 			CanAllSkill<-rbind.fill(CanAllSkill[colnames(CanAllSkill)], CandNoResume[colnames(CandNoResume)])
 		}
