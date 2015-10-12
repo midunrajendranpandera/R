@@ -79,49 +79,60 @@ zindex_main<-function(ReqId,Insert='c',...)
 	CandQuery <- mongo.bson.from.buffer(buf)
 	cursor <- mongo.find(mongo, ins, CandQuery,,list(candidateID=1L,parsedWords.word=1L, parsedWords.interpreter_value=1L))
 	res<- mongo.cursor.to.data.frame(cursor)
-	T1<-ncol(res)
-    T1<-T1-1
-    T1<-T1/2
-    T1<-T1-1
-    query1<-character()
-    query2<-character()
-    for(i in 1:T1){
-        c<-paste("parsedWords.word",i,sep=".")
-        query1[i]<-c
-        c<-paste("parsedWords.interpreter_value",i,sep=".")
-        query2[i]<-c
+	if(nrow(res)<=1){
+                
+		score<-data.frame(Cand)
+		score$RScore<-0
+		score$PScore<-0
+		score$EScore<-0
+		ScoresJ<-return_zindex(ReqId,score)
+		return(ScoresJ)
     }
-    T1<-"parsedWords.word"
-    query1<-c(T1,query1)
-    T1<-"parsedWords.interpreter_value"
-    query2<-c(T1,query2)
-    query<-c(query1,query2)
-    CanAllSkill <- melt(res,id="candidateID",query1,value.name='SkillSet')
-	CanAllSkill <- CanAllSkill[complete.cases(CanAllSkill),]
-	CanAllSkill <- CanAllSkill[,c(1,3)]
-	reqskill <- melt(res,id="candidateID",query,value.name='SkillSet')
-	reqskill <- reqskill[complete.cases(reqskill),]
-	 #res2<-res2[complete.cases(res2),]
-    reqskill.sub<-reqskill[with(reqskill,SkillSet=="skills"),]
-    ll<-nrow(reqskill.sub)
-    if(ll!=0){
-        vars<-as.character(reqskill.sub$variable)
-        vars<-gsub("interpreter_value","word",vars)
-        res2<-res[c("candidateID",vars)]
-        res2<-melt(res2,"candidateID",value.name="SkillSet")
-        CanSkill<-res2[,c(1,3)]
-    }
-    if(ll==0){
-        CanSkill<-CanAllSkill
-	}
-	Candd<-unique(CanAllSkill[,"candidateID"])
-	CandNoResume<- setdiff(Cand,Candd)
-	if(length(CandNoResume)!=0){
-		CandNoResume<-data.frame(CandNoResume)
-		colnames(CandNoResume)<- 'candidateID'
-		res2$SkillSet<-"NA"
-		CanSkill<-rbind.fill(CanSkill[colnames(CanSkill)], CandNoResume[colnames(CandNoResume)])
-		CanAllSkill<-rbind.fill(CanAllSkill[colnames(CanAllSkill)], CandNoResume[colnames(CandNoResume)])
+	if(nrow(res)!=0){
+		T1<-ncol(res)
+		T1<-T1-1
+		T1<-T1/2
+		T1<-T1-1
+		query1<-character()
+		query2<-character()
+		for(i in 1:T1){
+			c<-paste("parsedWords.word",i,sep=".")
+			query1[i]<-c
+			c<-paste("parsedWords.interpreter_value",i,sep=".")
+			query2[i]<-c
+		}
+		T1<-"parsedWords.word"
+		query1<-c(T1,query1)
+		T1<-"parsedWords.interpreter_value"
+		query2<-c(T1,query2)
+		query<-c(query1,query2)
+		CanAllSkill <- melt(res,id="candidateID",query1,value.name='SkillSet')
+		CanAllSkill <- CanAllSkill[complete.cases(CanAllSkill),]
+		CanAllSkill <- CanAllSkill[,c(1,3)]
+		reqskill <- melt(res,id="candidateID",query,value.name='SkillSet')
+		reqskill <- reqskill[complete.cases(reqskill),]
+		#res2<-res2[complete.cases(res2),]
+		reqskill.sub<-reqskill[with(reqskill,SkillSet=="skills"),]
+		ll<-nrow(reqskill.sub)
+		if(ll!=0){
+			vars<-as.character(reqskill.sub$variable)
+			vars<-gsub("interpreter_value","word",vars)
+			res2<-res[c("candidateID",vars)]
+			res2<-melt(res2,"candidateID",value.name="SkillSet")
+			CanSkill<-res2[,c(1,3)]
+		}
+		if(ll==0){
+			CanSkill<-CanAllSkill
+		}
+		Candd<-unique(CanAllSkill[,"candidateID"])
+		CandNoResume<- setdiff(Cand,Candd)
+		if(length(CandNoResume)!=0){
+			CandNoResume<-data.frame(CandNoResume)
+			colnames(CandNoResume)<- 'candidateID'
+			res2$SkillSet<-"NA"
+			CanSkill<-rbind.fill(CanSkill[colnames(CanSkill)], CandNoResume[colnames(CandNoResume)])
+			CanAllSkill<-rbind.fill(CanAllSkill[colnames(CanAllSkill)], CandNoResume[colnames(CandNoResume)])
+		}
 	}
 		
 	
@@ -156,9 +167,12 @@ zindex_main<-function(ReqId,Insert='c',...)
         temp<-temp[,c(1,3)]
         res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
     }
-	colnames(res)<-c("candidateID","SkillSet")
-	CanAllSkill<-rbind(res,CanAllSkill)
-	CanSkill<-rbind(res,CanSkill)
+	if(nrow(res)!=0){
+		colnames(res)<-c("candidateID","SkillSet")
+		CanAllSkill<-rbind(res,CanAllSkill)
+		CanSkill<-rbind(res,CanSkill)
+	}
+
     RScore<-zindex_relevance(ReqId,mongo,CanAllSkill)
     if(RScore=="No Requisition"){
                 return("Not a valid Requisition; Requisition do not have any requirements")
