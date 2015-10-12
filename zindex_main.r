@@ -116,46 +116,54 @@ zindex_main<-function(ReqId,Insert='c',...)
 		T1<-T1-1
 		T1<-T1/2
 		T1<-T1-1
-		query1<-character()
-		query2<-character()
-		for(i in 1:T1){
-			c<-paste("parsedWords.word",i,sep=".")
-			query1[i]<-c
-			c<-paste("parsedWords.interpreter_value",i,sep=".")
-			query2[i]<-c
+		if(T1!=0){
+			query1<-character()
+			query2<-character()
+			for(i in 1:T1){
+				c<-paste("parsedWords.word",i,sep=".")
+				query1[i]<-c
+				c<-paste("parsedWords.interpreter_value",i,sep=".")
+				query2[i]<-c
+			}
+			T1<-"parsedWords.word"
+			query1<-c(T1,query1)
+			T1<-"parsedWords.interpreter_value"
+			query2<-c(T1,query2)
+			query<-c(query1,query2)
+			CanAllSkill <- melt(res,id="candidateID",query1,value.name='SkillSet')
+			CanAllSkill <- CanAllSkill[complete.cases(CanAllSkill),]
+			CanAllSkill <- CanAllSkill[,c(1,3)]
+			reqskill <- melt(res,id="candidateID",query,value.name='SkillSet')
+			reqskill <- reqskill[complete.cases(reqskill),]
+			#res2<-res2[complete.cases(res2),]
+			reqskill.sub<-reqskill[with(reqskill,SkillSet=="skills"),]
+			ll<-nrow(reqskill.sub)
+			if(ll!=0){
+				vars<-as.character(reqskill.sub$variable)
+				vars<-gsub("interpreter_value","word",vars)
+				res2<-res[c("candidateID",vars)]
+				res2<-melt(res2,"candidateID",value.name="SkillSet")
+				CanSkill<-res2[,c(1,3)]
+			}
+			if(ll==0){
+				CanSkill<-CanAllSkill
+			}
+			Candd<-unique(CanAllSkill[,"candidateID"])
+			CandNoResume<- setdiff(Cand,Candd)
+			if(length(CandNoResume)!=0){
+				CandNoResume<-data.frame(CandNoResume)
+				colnames(CandNoResume)<- 'candidateID'
+				CandNoResume$SkillSet<-"NA"
+				CanSkill<-rbind.fill(CanSkill[colnames(CanSkill)], CandNoResume[colnames(CandNoResume)])
+				CanAllSkill<-rbind.fill(CanAllSkill[colnames(CanAllSkill)], CandNoResume[colnames(CandNoResume)])
+			}
 		}
-		T1<-"parsedWords.word"
-		query1<-c(T1,query1)
-		T1<-"parsedWords.interpreter_value"
-		query2<-c(T1,query2)
-		query<-c(query1,query2)
-		CanAllSkill <- melt(res,id="candidateID",query1,value.name='SkillSet')
-		CanAllSkill <- CanAllSkill[complete.cases(CanAllSkill),]
-		CanAllSkill <- CanAllSkill[,c(1,3)]
-		reqskill <- melt(res,id="candidateID",query,value.name='SkillSet')
-		reqskill <- reqskill[complete.cases(reqskill),]
-		#res2<-res2[complete.cases(res2),]
-		reqskill.sub<-reqskill[with(reqskill,SkillSet=="skills"),]
-		ll<-nrow(reqskill.sub)
-		if(ll!=0){
-			vars<-as.character(reqskill.sub$variable)
-			vars<-gsub("interpreter_value","word",vars)
-			res2<-res[c("candidateID",vars)]
-			res2<-melt(res2,"candidateID",value.name="SkillSet")
-			CanSkill<-res2[,c(1,3)]
-		}
-		if(ll==0){
+		if(T1==0){
+			CanAllSkill <- melt(res,id="candidateID","parsedWords.word",value.name='SkillSet')
 			CanSkill<-CanAllSkill
+		
 		}
-		Candd<-unique(CanAllSkill[,"candidateID"])
-		CandNoResume<- setdiff(Cand,Candd)
-		if(length(CandNoResume)!=0){
-			CandNoResume<-data.frame(CandNoResume)
-			colnames(CandNoResume)<- 'candidateID'
-			CandNoResume$SkillSet<-"NA"
-			CanSkill<-rbind.fill(CanSkill[colnames(CanSkill)], CandNoResume[colnames(CandNoResume)])
-			CanAllSkill<-rbind.fill(CanAllSkill[colnames(CanAllSkill)], CandNoResume[colnames(CandNoResume)])
-		}
+		
 	}
 		
 	
