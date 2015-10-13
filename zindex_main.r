@@ -39,8 +39,17 @@ zindex_main<-function(ReqId,Insert='c',...)
 		score$RScore<-0
 		score$PScore<-0
 		score$EScore<-0
-		ScoresJ<-return_zindex(ReqId,score)
-		return(ScoresJ)
+		if(Insert=='c' | Insert=='C'){
+			insert_zindex(ReqId,score,mongo)
+			return("Scores Inserted")
+		}
+		else if(Insert=='r' | Insert=='R'){
+			ScoresJ<-return_zindex(ReqId,score)
+			return(ScoresJ)
+		}
+		else{
+			return("Unknown Insert/Return condition")
+        }
     }
 	coll <- "ideal_candidate_characteritics"
     idealcoll <- paste(db,coll,sep=".")
@@ -83,8 +92,17 @@ zindex_main<-function(ReqId,Insert='c',...)
 		score$RScore<-0
 		score$PScore<-0
 		score$EScore<-0
-		ScoresJ<-return_zindex(ReqId,score)
-		return(ScoresJ)
+		if(Insert=='c' | Insert=='C'){
+			insert_zindex(ReqId,score,mongo)
+			return("Scores Inserted")
+		}
+		else if(Insert=='r' | Insert=='R'){
+			ScoresJ<-return_zindex(ReqId,score)
+			return(ScoresJ)
+		}
+		else{
+			return("Unknown Insert/Return condition")
+        }
 	}
 	for(m in 1:length(reslist)){
 		temp<-reslist[m]
@@ -100,16 +118,23 @@ zindex_main<-function(ReqId,Insert='c',...)
 		temp<-ldply (temp, data.frame)
 		res <- rbind.fill(res[colnames(res)], temp[colnames(temp)])
 	}
-
-	
 	if(nrow(res)<=1){
                 
 		score<-data.frame(Cand)
 		score$RScore<-0
 		score$PScore<-0
 		score$EScore<-0
-		ScoresJ<-return_zindex(ReqId,score)
-		return(ScoresJ)
+		if(Insert=='c' | Insert=='C'){
+			insert_zindex(ReqId,score,mongo)
+			return("Scores Inserted")
+		}
+		else if(Insert=='r' | Insert=='R'){
+			ScoresJ<-return_zindex(ReqId,score)
+			return(ScoresJ)
+		}
+		else{
+			return("Unknown Insert/Return condition")
+		}
     }
 	if(nrow(res)!=0){
 		T1<-ncol(res)
@@ -165,8 +190,6 @@ zindex_main<-function(ReqId,Insert='c',...)
 		}
 		
 	}
-		
-	
 	###Getting data from Candidate collection for skills###
     coll <- "candidate"
     ins <- paste(db,coll,sep=".")
@@ -183,13 +206,13 @@ zindex_main<-function(ReqId,Insert='c',...)
         l<-length(temp2)
         if(l<=2)
         {
-                        k<-k+1
+			k<-k+1
             candnoskill[k]<-as.integer(temp2[2])
             next
         }
         l<-length(temp)
         for(j in 1:l){
-                        ##print(i)
+			##print(i)
             #print(j)
             temp[[j]][1]<-NULL
         }
@@ -206,11 +229,25 @@ zindex_main<-function(ReqId,Insert='c',...)
 
     RScore<-zindex_relevance(ReqId,mongo,CanAllSkill)
     if(RScore=="No Requisition"){
-                return("Not a valid Requisition; Requisition do not have any requirements")
+		score<-data.frame(Cand)
+		score$RScore<-0
+		score$PScore<-0
+		score$EScore<-0
+		if(Insert=='c' | Insert=='C'){
+			insert_zindex(ReqId,score,mongo)
+			return("Scores Inserted")
+		}
+		else if(Insert=='r' | Insert=='R'){
+			ScoresJ<-return_zindex(ReqId,score)
+			return(ScoresJ)
+		}
+		else{
+			return("Unknown Insert/Return condition")
+        }
     }
     PScore<-zindex_probabilistics(ReqId,mongo,CanAllSkill)
     if(PScore=="No Ideal Table"){
-                Scores<-RScore
+        Scores<-RScore
         Scoretemp<-Scores
         Scoretemp$PScore<-0
         PScore<-subset(Scoretemp,select=c(Cand,PScore))
@@ -220,14 +257,14 @@ zindex_main<-function(ReqId,Insert='c',...)
     Scores<-merge(Scores,EScore,by="Cand")
     ##Condition to check insert condition
     if(Insert=='c' | Insert=='C'){
-                insert_zindex(ReqId,Scores,mongo)
+		insert_zindex(ReqId,Scores,mongo)
         return("Scores Inserted")
     }
     else if(Insert=='r' | Insert=='R'){
-                ScoresJ<-return_zindex(ReqId,Scores)
+		ScoresJ<-return_zindex(ReqId,Scores)
         return(ScoresJ)
     }
     else{
-                return("Unknown Insert/Return condition")
+		return("Unknown Insert/Return condition")
         }
 }
