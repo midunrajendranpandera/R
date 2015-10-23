@@ -4,7 +4,7 @@
 
 ss_insert_zindex<- function(ReqId,Score,mongo)
 {
-	outputcoll<-"searchscore_cand_zendex_scores"
+	outputcoll<-"searchscore_cand_zindex_scores"
 	length<-nrow(Score)
 	for(i in 1:length){
 		temp<-Score[i,]
