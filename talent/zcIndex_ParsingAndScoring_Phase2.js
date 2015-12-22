@@ -51,7 +51,7 @@ db.candidate_skills_from_parsed_resumes.createIndex(
 // indx_name="ideal_candidate_characteritics_GlobalJobCategoryId_UK1"
 db.ideal_candidate_characteritics.createIndex( 
 { 
-  "global_job_cayegory_id" : 1
+  "global_job_category_id" : 1
 }, 
 { 
   "name" : "ideal_candidate_characteritics_GlobalJobCategoryId_UK1", 
