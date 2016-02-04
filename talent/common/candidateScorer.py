@@ -152,7 +152,6 @@ def scoreCandidates(requisition, candidate_list, appendRequisition, score_collec
    score_map = {}
    reqId = requisition["requisition_id"]
    #print(reqId)
-
    client_table=db["client"]
    msp_company = db.client_table.find_one( { "client_id" : requisition["client_id"] }, { "msp_company_name": 1, "_id": 0 } )
    if msp_company is not None:
@@ -300,16 +299,20 @@ def scoreCandidates(requisition, candidate_list, appendRequisition, score_collec
                candidate["requisition_submission_status"] = submission["requisition_submission_status"]
                candidate["candidate_submit_date"] = submission["candidate_submit_date"]
                candidate["resource_pay_rate"] = submission["resource_pay_rate"]
-               #candidate["previous_submits"] = submission["count"]
-               #candidate["previous_submits"] = submission_count_map["candidate_id"]
                candidate["submitted_bill_rate"] = submission["submitted_bill_rate"]
+               candidate["requisition_submission_id"] = submission["requisition_submission_id"]
+               candidate["candidate_status_id"] = submission["candidate_status_id"]
+               candidate["candidate_status"] = submission["candidate_status"]
             else:
                candidate["requisition_submission_status_id"] = 0
                candidate["requisition_submission_status"] = None
                candidate["candidate_submit_date"] = None
                candidate["resource_pay_rate"] = 0.0
-               #candidate["previous_submits"] = 0
                candidate["submitted_bill_rate"] = 0.0
+               candidate["requisition_submission_id"] = 0
+               candidate["candidate_status_id"] = 0
+               candidate["candidate_status"] = None
+              
 
             if (submission_count_map):
                try:

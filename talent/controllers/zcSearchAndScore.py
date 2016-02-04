@@ -114,7 +114,8 @@ def getCandidateList(paramsObj, relevant_vendor_ids, category_name, relevant_can
 		"job_skill_names.job_skill_id" : 0,
                 "job_skill_names.competency_years_experience" : 0,
                 "job_skill_names.competency_level" : 0,
-                "job_certificate_names.job_certification_id" : 0
+                "job_certificate_names.job_certification_id" : 0,
+                "etl_process_flag" : 0
 	}
 	ex_time = datetime.now()
 	candidate_cursor = db.candidate.find(query_dict,  predicate_dict )
@@ -139,7 +140,8 @@ def getCandidateList2(final_candidate_ids):
                 "job_skill_names.job_skill_id" : 0,
                 "job_skill_names.competency_years_experience" : 0,
                 "job_skill_names.competency_level" : 0,
-                "job_certificate_names.job_certification_id" : 0
+                "job_certificate_names.job_certification_id" : 0,
+                "etl_process_flag" : 0
         }
         ex_time = datetime.now()
         candidate_cursor = db.candidate.find(query_dict,  predicate_dict )

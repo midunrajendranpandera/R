@@ -76,8 +76,8 @@ def matchSkills(cand_skills, req_skills, threshold):
             # print("matchSkills : candidate_match_count [" + str(candidate_match_count) + "]")
 
         if candidate_match_count >= min_matching_criteria: #(req_skills_length * threshold):
-            print("MinMatchSkills : [" + str(min_matching_criteria) + "] matched [" + str(candidate_match_count) +
-                   "] reqSkillsCount [" + str(req_skills_length) + "] candSkillCount [" + str(cand_skills_length) +"]")
+            #print("MinMatchSkills : [" + str(min_matching_criteria) + "] matched [" + str(candidate_match_count) +
+            #       "] reqSkillsCount [" + str(req_skills_length) + "] candSkillCount [" + str(cand_skills_length) +"]")
             return True
 
     except Exception as e:
@@ -108,13 +108,13 @@ def getCharacteristicMap():
             # len(skill_list["Skills"]) + " Skills List:" + str(skill_list["Skills"]))
         except Exception as e:
             DebugException(e)
-            print("---Run Time: %s seconds ---" % (time.time() - start_time))
+            #print("---Run Time: %s seconds ---" % (time.time() - start_time))
 
     return characteristic_map
 
 
 def candidate_classifier_incre(in_candidate,characteristic_list):
-    print("GO")
+    #print("GO")
     start_time = time.time()
     document_map = {}
     category_map = db["category_candidate_map"]
@@ -123,7 +123,7 @@ def candidate_classifier_incre(in_candidate,characteristic_list):
         cand_table = db["candidate"]
         #characteristic_list = getCharacteristicMap()
         db.category_map.update_many({},{"$pull":{"candidates":in_candidate}},True)
-        print("[candidateClassifierJob] ---query Time: %s seconds ---" % (time.time() - start_time))
+        #print("[candidateClassifierJob] ---query Time: %s seconds ---" % (time.time() - start_time))
         skip_amount = 0
         cand_count = 0
 
@@ -148,7 +148,7 @@ def candidate_classifier_incre(in_candidate,characteristic_list):
         # candidate_list = list(
         # cand_table.find(query_dict, proj_dict).skip(start_delta + skip_amount).limit(fetch_limit))
         candidate_list = cand_table.find(query_dict, proj_dict)  # .distinct("candidate_id")
-        print(str(candidate_list))
+        #print(str(candidate_list))
         candlist = []
         for candidate in candidate_list:
             candlist.append(candidate["candidate_id"])
@@ -169,13 +169,13 @@ def candidate_classifier_incre(in_candidate,characteristic_list):
                         cand_resume_skill_list.append(cand_resume_skill["word"].lower())
 
             combined_list = cand_job_skill_name_list + cand_resume_skill_list
-            print(str(combined_list))
+            #print(str(combined_list))
             if len(combined_list) > 0:
                 cand_count += 1
                 for job_cat_id, skill in characteristic_list.items():
                     # print("main : Running candidate [" + str(candidate["candidate_id"]) + "] reqSkillCount[" +
                     # str(len(skill["Skills"])) + "] vs candSkillsCount [" + str(len(cand_job_skill_name_list)) +"]")
-                    threshold = 0.10
+                    threshold = 0.70
                     if matchSkills(combined_list, skill["Skills"], threshold):
                         # print("main :        <<<MACTHED>> IdealCharac Section JobCatId[{0}] candidate_id [{1}".format(
                         # str(job_cat_id), str(candidate["candidate_id"])))
@@ -205,9 +205,9 @@ def candidate_classifier_incre(in_candidate,characteristic_list):
         etl_job_log["total_records_processed"] = cand_count
         #db.etl_job_log.insert_one(etl_job_log)
         # log_file.write(str(etl_job_log))
-        timeNow = datetime.utcnow().isoformat()
-        print("[" + timeNow + "] [candidateClassifierJob]  ---Run Time: [" + str(
-            time.time() - start_time) + "] seconds ---")
+        #timeNow = datetime.utcnow().isoformat()
+        #print("[" + timeNow + "] [candidateClassifierJob]  ---Run Time: [" + str(
+        #    time.time() - start_time) + "] seconds ---")
 
     except Exception as e:
         DebugException(e)

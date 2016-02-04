@@ -23,3 +23,10 @@ url.server_location=devpyr01.zcdev.local
 url.server_port=80
 url.debug=False
 url.timeout=1800
+
+[ScoringParametersSection]
+HISTORY_MATCH_NOISE = 0.65
+HISTORY_WORDS_MATCH_NOISE = 0.65
+HISTORY_SKILLS_MATCH_NOISE = 1.0
+HISTORY_IDEAL_MATCH_NOISE = 0.65
+

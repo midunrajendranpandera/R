@@ -26,18 +26,22 @@ def obj_dict(self):
 log_file = open("requisitionParser.log", "a")
 
 try:
-
     config = configparser.ConfigParser()
     config.read('../common/ConfigFile.properties')
 
     uri = config.get("DatabaseSection", "database.connection_string")
     db_name = config.get("DatabaseSection", "database.dbname")
     client = MongoClient(uri)
-
     db = client[db_name]
+    #print("%s" % db)
+except Exception as e:
+    print("Exception while reading config file / acquiring DB connection [") + str(e) + "]")
+
+
+try:
+
     parsed_requisition = db["requisition_skills_from_parsed_requisition"]
     etlJob = db["etl_job_log"]
-    #print("%s" % db)
 
     beginTime = datetime.now()
     interpreterList = list(db.master_interpreter.find())

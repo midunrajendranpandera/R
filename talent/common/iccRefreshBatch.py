@@ -80,9 +80,9 @@ for jobid in globalJobCatList:
     print ("Working on Job Category %s." % jobid)
     counter += 1
     print ("Working on Requisition# %s of %s" %(counter,jobIdCount))
-    exist = db.ideal_candidate_characteritics.count({"global_job_category_id":jobid})
-    if(exist==1):
-        print("Ideal Characteristics Exist")
-        continue
+    #exist = db.ideal_candidate_characteritics.count({"global_job_category_id":jobid})
+    #if(exist==1):
+        #print("Ideal Characteristics Exist")
+        #continue
     status = ideal_characteristics_build(jobid)
     print(status)

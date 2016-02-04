@@ -61,7 +61,7 @@ def getCandidateScore(reqId, isSubmitted, masterSupplierId, minScore):
                           "requisition_id" : int(reqId),
                           "dnr_flag" : False
                        }
-          candidateList = db.requisition_candidate.find( query_dict, { "loaded_date" : 0, "updated_date" : 0, "dnr_flag" : 0, "is_hired" : 0, "_id" : 0 } )
+          candidateList = db.requisition_candidate.find( query_dict, { "loaded_date" : 0, "updated_date" : 0, "dnr_flag" : 0, "is_hired" : 0, "etl_process_flag" :0, "_id" : 0 } )
           appendReq = False
           mspFlag = False
           
@@ -72,7 +72,7 @@ def getCandidateScore(reqId, isSubmitted, masterSupplierId, minScore):
               "dnr_flag" : False,
               "master_supplier_id" : int(masterSupplierId)
           }
-          candidateList = db.requisition_candidate.find( query_dict, { "loaded_date" : 0, "updated_date" : 0, "dnr_flag" : 0, "is_hired" : 0, "_id" : 0 } )
+          candidateList = db.requisition_candidate.find( query_dict, { "loaded_date" : 0, "updated_date" : 0, "dnr_flag" : 0, "is_hired" : 0, "etl_process_flag" :0, "_id" : 0 } )
           appendReq = False
           mspFlag = False
 
@@ -95,7 +95,8 @@ def getCandidateScore(reqId, isSubmitted, masterSupplierId, minScore):
                 "job_skill_names.job_skill_id" : 0,
                 "job_skill_names.competency_years_experience" : 0,
                 "job_skill_names.competency_level" : 0,
-                "job_certificate_names.job_certification_id" : 0
+                "job_certificate_names.job_certification_id" : 0,
+                "etl_process_flag" : 0
          }
          candidateList = db.candidate.find( { "dnrs.client_id" : {"$ne" : clientId}, "master_supplier_id" : int(masterSupplierId) }, exclude_list )
          appendReq = True

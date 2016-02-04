@@ -7,17 +7,12 @@ from resumeResult import ResumeResult
 from parsedWords import ParsedWord
 from datetime import datetime
 from pymongo import MongoClient
-from dateutil import parser
 from debugException import DebugException
 from candidateClassifierIncreJob import candidate_classifier_incre
-#from rzindex_wrapper import rzindex_candidate
 from candidateClassifierIncreJob import getCharacteristicMap
 from candidateScoringIncremental import candidateIncrementalScorer
 
-start_time = time.time()
-
-#db.candidateresume_text.find( { $or: [ { "loaded_date": { $lte: createdDate } }, { "update_date": { $lte: createdDate } } ] } , \
-#{"candidate_id": 1, "loaded_date": 1, "update_date": 1, "_id": 0} ).sort({"loaded_date": -1}).limit(1)
+start_time = datetime.now()
 
 matchCount = 0
 count = 0
@@ -37,7 +32,7 @@ def candResumeParser(resumeSkill):
         wordcount = {}
         global count
         count += 1
-        print("Running "+ str(count))
+        #print("Running "+ str(count))
         #print(str(resumeLine))
         resumeText = resumeLine["resume_text"]
         #print("Text - %s" % resumeText)
@@ -70,11 +65,8 @@ def candResumeParser(resumeSkill):
                 currentResumeResult.parsedWords.append(ParsedWord(word, match_count, 0))
 
 
-            # print("---Parse Time: %s seconds ---" % (time.time() - start_time))
             resumeJSON = json.dumps(currentResumeResult, default=obj_dict)
-            # print("---JSON Time: %s seconds ---" % (time.time() - start_time))
             mongoResume = json.loads(resumeJSON)
-            # print("---BSON Time: %s seconds ---" % (time.time() - start_time))
 
             if WRITE_TO_DB:
                 db.candidate_skills_from_parsed_resumes.update({"candidate_id": candidateId, "resume_id": resumeId},
@@ -86,61 +78,77 @@ try:
     config = configparser.ConfigParser()
     config.read('../common/ConfigFile.properties')
 
+    LOG_PATH = config.get("LogSection", "log.log_path")
     uri = config.get("DatabaseSection", "database.connection_string")
     db_name = config.get("DatabaseSection", "database.dbname")
-    client=MongoClient(uri)
-
+    client = MongoClient(uri)
     db = client[db_name]
-    #print("%s" % db)
+
+    start_time = datetime.now()
+
+    s = datetime.today().strftime("%Y%m%d")
+    logFileName = LOG_PATH + "candidateIncremental_" + s + ".log"
+
+    try:
+        log_file = open(logFileName, "a")
+    except (FileNotFoundError, IOError) as e:
+        logFileName = "./candidateIncremental_" + s + ".log"
+        log_file = open(logFileName, "a")
+        print("[" + datetime.now().isoformat() + "]  Configured LOG_PATH doesn't exist [" + str(e) + "]" )
+
+
+    log_file.write("[" + datetime.now().isoformat() + "] [" + JOB_NAME + "] [BEGIN]" + "\n")
 
     beginTime = datetime.utcnow()
     interpreterList = list(db.master_interpreter.find())
-    jobs = list(db.etl_job_log.find({ "job_name" : JOB_NAME }).sort("start_datetime",  -1).limit(1))
-    for j in jobs:
-        job = j
 
-    lastRunDate = job["start_datetime"]
     candidateIdList = []
-    resumeCandidateList = list(db.candidate_resume_text.find( { "$or": [ { "loaded_date": { "$gt": lastRunDate } }, { "update_date": { "$gt": lastRunDate } } ] },{"candidate_id" : 1, "_id" : 0} ))
+    resumeCandidateList = list(db.candidate_resume_text.find( { "etl_process_flag": False }, {"candidate_id" : 1, "_id" : 0} ))
     for candidate in resumeCandidateList:
         candidateIdList.append(candidate["candidate_id"])
-    candidateList = list(db.candidate.find( { "$or": [ { "loaded_date": { "$gt": lastRunDate } }, { "update_date": { "$gt": lastRunDate } } ] },{"candidate_id" : 1, "_id" : 0} ))
+
+    candidateList = list(db.candidate.find( { "etl_process_flag": False }, {"candidate_id" : 1, "_id" : 0} ) )
     for candidate in candidateList:
         candidateIdList.append(candidate["candidate_id"])
     candidateIdList = list(set(candidateIdList))
-    #total_resumes = db.candidate_resume_text.find( { "$or": [ { "loaded_date": { "$gt": lastRunDate } }, { "update_date": { "$gt": lastRunDate } } ] } ).count()
-    #candidatetotal = len(candidateIdList)
     #candidateIdList = [117542,32040]
     candidatetotal = len(candidateIdList)
-    print(str(candidatetotal))
+    #print(str(candidatetotal))
     #print(candidateIdList)
-    log_file = open("resumeParser.log", "a")
+
     etl_job_log = {}
     temp = []	
     charcteristics_list = getCharacteristicMap()
-    for i in range(0,candidatetotal):
-        candidateResumeSkills = list(db.candidate_resume_text.find({"candidate_id":candidateIdList[i]}))
-        print(str(candidateIdList[i]))
-        #print(str(candidateResumeSkills))
-        print("Parsing")
+    for i in range(0, candidatetotal):
+        candBeginTime = datetime.now()
+        candidateResumeSkills = list( db.candidate_resume_text.find({"candidate_id": candidateIdList[i]}) )
         temp = candResumeParser(candidateResumeSkills)
-        print("Classifier")
-        candidate_classifier_incre(candidateIdList[i],charcteristics_list)
-        print("Scoring")
-        #rzindex_candidate(candidateIdList[i])
-        candidateIncrementalScorer(candidateIdList[i],db)
-    
-    #print("---Total Time: %s seconds ---" % (time.time() - start_time))
+        log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] Resume parsing elapsed time [" + str(datetime.now() - candBeginTime) + "]" + "\n")
+
+        classiferBeginTime = datetime.now()
+        candidate_classifier_incre(candidateIdList[i], charcteristics_list)
+        log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] classification elapsed time [" + str(datetime.now() - classiferBeginTime) + "]" + "\n")
+
+        scoreBeginTime = datetime.now()
+        candidateIncrementalScorer(candidateIdList[i], db)
+        log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] scoring elapsed time [" + str(datetime.now() - scoreBeginTime) + "]" + "\n")
+
+        count += 1
+        db.candidate_resume_text.update( {"candidate_id": candidateIdList[i]}, { "$set" : {"etl_process_flag" : True} } )
+        db.candidate.update( {"candidate_id": candidateIdList[i]}, { "$set" : {"etl_process_flag" : True} } )
+        log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] Total elapsed time [" + str(datetime.now() - candBeginTime) + "]" + "\n")
+
+    log_file.write("[" + datetime.now().isoformat() + "] [" + JOB_NAME + "] [END]  Total candidates processed : [" + str(count) + "] Total time elapsed [" + str(datetime.now() - start_time) + "]" + "\n")
     etl_job_log["job_name"] = JOB_NAME
     etl_job_log["start_datetime"] = beginTime
     etl_job_log["end_datetime"] = datetime.utcnow()
-    etl_job_log["elapsed_time_in_seconds"] = time.time() - start_time
+    etl_job_log["elapsed_time_in_seconds"] = str(datetime.now() - start_time)
     etl_job_log["total_records_processed"] = candidatetotal
     db.etl_job_log.insert_one(etl_job_log)
-    log_file.write(str(etl_job_log))
 
 except Exception as e:
     DebugException(e)
-    log_file.write("Exception during resume parsing: [" + str(e) + "]")
+    log_file.write("[" + datetime.now().isoformat() + "] JOB_NAME [" + JOB_NAME + "] exception during processing [" + str(e) + "]" + "\n")
 
+log_file.write("-----" + "\n")
 log_file.close()

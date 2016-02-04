@@ -7,9 +7,7 @@ from requisitionResult import RequisitionResult
 from parsedWords import ParsedWord
 from datetime import datetime
 from pymongo import MongoClient
-from dateutil import parser
 from debugException import DebugException
-#from rzindex_wrapper import rzindex_wrapper_newreq
 from requisitionIncrementalScorer import requisitionIncrementalScorer
 
 begin_time = datetime.utcnow()
@@ -26,58 +24,54 @@ count = 0
 def obj_dict(self):
     return self.__dict__
 
-log_file = open("requisitionParser.log", "a")
 
 try:
-
     config = configparser.ConfigParser()
     config.read('../common/ConfigFile.properties')
 
+    LOG_PATH = config.get("LogSection", "log.log_path")
     uri = config.get("DatabaseSection", "database.connection_string")
     db_name = config.get("DatabaseSection", "database.dbname")
     client = MongoClient(uri)
-
     db = client[db_name]
+
+    s = datetime.today().strftime("%Y%m%d")
+    logFileName = LOG_PATH + "requisitionParser_" + s + ".log"
+
+    try:
+        log_file = open(logFileName, "a")
+    except (FileNotFoundError, IOError) as e:
+        logFileName = "./requisitionParser_" + s + ".log"
+        log_file = open(logFileName, "a")
+        print("[" + datetime.now().isoformat() + "]  Configured LOG_PATH doesn't exist [" + str(e) + "]" )
+
     parsed_requisition = db["requisition_skills_from_parsed_requisition"]
     etlJob = db["etl_job_log"]
-    #print("%s" % db)
 
     beginTime = datetime.utcnow()
     interpreterList = list(db.master_interpreter.find())
-    jobs = list(db.etl_job_log.find({ "job_name" : JOB_NAME }).sort("start_datetime",  -1).limit(1))
-    for j in jobs:
-        job = j
-
-    print(job)
-    lastRunDate = job["start_datetime"]
-    print(lastRunDate)
 
     etl_job_log = {}
-    highestDate = []
-    highestDate.append(begin_time)
-    total_req = db.requisition.find( { "$or": [ { "loaded_date": { "$gt": lastRunDate } }, { "update_date": { "$gt": lastRunDate } } ] } ).count()
-    #total_req = 1
-    print("Total requisitions found: [" + str(total_req) + "]")
+    total_req = db.requisition.find( { "etl_process_flag": False } ).count()
+    log_file.write("[" + datetime.now().isoformat() + "] [" + JOB_NAME + "] [BEGIN]  Total requisitions to be processed [" + str(total_req) + "]" + "\n")
 
     while cursor_start < total_req:
-        requisitionList = list(db.requisition.find( { "$or": [ { "loaded_date": { "$gt": lastRunDate } }, { "update_date": { "$gt": lastRunDate } } ] } , {"requisition_id":1, "data_center" : 1, "req_requirements":1, "req_description":1, "requisition_text": 1,"loaded_date":1,"update_date":1}).skip(cursor_start).limit(fetch_limit))
+        requisitionList = list(db.requisition.find( { "etl_process_flag": False }, {"requisition_id":1, "data_center" : 1, "req_requirements":1, "req_description":1, "requisition_text": 1}).skip(cursor_start).limit(fetch_limit))
         #requisitionList = list(db.requisition.find( {"requisition_id":{"$in": [113071]}},{"requisition_id":1, "data_center" : 1, "req_requirements":1, "req_description":1,"requisition_text": 1,"loaded_date":1,"update_date":1}))
-        for requisitionLine in requisitionList:
-            wordcount = {}
-            highestDate.append(requisitionLine["loaded_date"])
-            highestDate.append(requisitionLine["update_date"])
+        for requisition in requisitionList:
+            reqBeginTime = datetime.now()
             count += 1
-            print("Running "+ str(count))
-            requisitionText = requisitionLine["requisition_text"]
+            wordcount = {}
+            requisitionText = requisition["requisition_text"]
             if requisitionText is None:
                 requisitionText = ""
-            requisitionId = requisitionLine["requisition_id"]
-            print(str(requisitionId))
-            dataCenter = requisitionLine["data_center"]
+            requisitionId = requisition["requisition_id"]
+            #print("Running count [" + str(count) + "]  RequisitionId [" + str(requisitionId) + "]")
+            dataCenter = requisition["data_center"]
             currentRequisitionResult = RequisitionResult(requisitionId, dataCenter)
             wc=[]
             for interpreterLine in interpreterList:
-                interpreterItem = " "+interpreterLine["Item"]+" "
+                interpreterItem = " " + interpreterLine["Item"] + " "
                 interpreterValue = interpreterLine["ItemType"]
                 matchCount = requisitionText.lower().count(interpreterItem.lower())
                 if matchCount > 0:
@@ -96,28 +90,24 @@ try:
             for word,match_count in wordcount.items():
                 currentRequisitionResult.parsedWords.append(ParsedWord(word, match_count, 0))
 
-            #print("---Parse Time: %s seconds ---" % (time.time() - start_time))
             reqJSON = json.dumps(currentRequisitionResult, default=obj_dict)
             mongoReq = json.loads(reqJSON)
 
             if WRITE_TO_DB:
                 db.requisition_skills_from_parsed_requisition.update( { "requisition_id" : requisitionId }, mongoReq, upsert=True)
 
-            #print("---JSON Time: %s seconds ---" % (time.time() - start_time))
-            #rzindex_wrapper_newreq(requisitionId)
-            print("RequisitionId %s" %(requisitionId))
-            status = requisitionIncrementalScorer(requisitionId,db)
+            status = requisitionIncrementalScorer(requisitionId, db, log_file)
+            #After process completed, set the etl_process_flag to true indicating that the requisition incremental processing is complete
+            db.requisition.update( {"requisition_id": requisitionId}, { "$set" : {"etl_process_flag" : True} } )
+            log_file.write("[" + datetime.now().isoformat() + "] RequisitionId [" + str(requisitionId) + "] total elapsed Ttime [" + str(datetime.now() - reqBeginTime) + "]" + "\n")
         cursor_start += fetch_limit
-        #cursor_start += total_req
 
 
-    highestDate = list(filter(None, highestDate))
-    #print(highestDate)
-    highestDate = max(highestDate)
-    print("---Total Time: %s seconds ---" % (time.time() - start_time))
+    log_file.write("[" + datetime.now().isoformat() + "] [" + JOB_NAME + "] [END]  Total Requisitions processed : [" + str(count) + "] Total time elapsed [" + str(time.time() - start_time) + "]" + "\n")
+
     etl_job_log = {}
     etl_job_log["job_name"] = JOB_NAME
-    etl_job_log["start_datetime"] = highestDate
+    etl_job_log["start_datetime"] = begin_time
     etl_job_log["end_datetime"] = datetime.utcnow()
     etl_job_log["elapsed_time_in_seconds"] = time.time() - start_time
     etl_job_log["total_records_processed"] = count
@@ -126,6 +116,8 @@ try:
 except Exception as e:
     DebugException(e)
     msg = "[requisitionParser]" + e
+    log_file.write("[" + datetime.now().isoformat() + "] JOB_NAME [" + JOB_NAME + "] exception during processing [" + str(e) + "]" + "\n")
 
+log_file.write("-----" + "\n")
 log_file.close()
 

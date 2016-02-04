@@ -15,7 +15,11 @@ from debugException import DebugException
 
 config = configparser.ConfigParser()
 config.read('../common/ConfigFile.properties')
-HISTORY_MATCH_NOISE = 0.65
+
+#CONSTANTS
+HISTORY_WORDS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_WORDS_MATCH_NOISE")
+HISTORY_SKILLS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_SKILLS_MATCH_NOISE")
+HISTORY_IDEAL_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_IDEAL_MATCH_NOISE")
 
 uri = config.get("DatabaseSection", "database.connection_string")
 db_name = config.get("DatabaseSection", "database.dbname")
@@ -49,7 +53,8 @@ def scoreInserter(requisition):
         zindex_score["zindex_score"] = 0
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate["candidate_id"] ))
+        zindex_score["update_datetime"] = datetime.utcnow()
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate["candidate_id"] ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
 def reqScorer(reqParsed,jobid,idealSkills,requisition):
@@ -96,7 +101,8 @@ def reqScorer(reqParsed,jobid,idealSkills,requisition):
         zindex_score["zindex_score"] = 0
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(requisition,candidate ))
+        zindex_score["update_datetime"] = datetime.utcnow()
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(requisition,candidate ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
     #Candidate resume skills
@@ -129,22 +135,24 @@ def reqScorer(reqParsed,jobid,idealSkills,requisition):
             for skills in skillset["job_skill_names"]:
                 #print(skills["job_skill_name"])
                 cand_resume_skill_list.append(skills["job_skill_name"])
-        resWordsLength = HISTORY_MATCH_NOISE * (len(reqParsedWordsList))
+        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))        
         canWordsLength = len(cand_resume_words_list)
         wordsIntersection = len(set(reqParsedWordsList).intersection(set(cand_resume_words_list)))
         zindex_skill_score["name"] = "Skills"
         zindex_skill_score["score"] = math.ceil(40*(wordsIntersection/resWordsLength))
         if(zindex_skill_score["score"] > 40):
             zindex_skill_score["score"] = 40
-        resSkillLength = len(reqParsedSkillList)
+        resSkillLength = HISTORY_SKILLS_MATCH_NOISE * len(reqParsedSkillList)
         skillIntersection = len(set(reqParsedSkillList).intersection(set(cand_resume_skill_list)))
         zindex_exp_score["name"] = "Experience"
         if(resSkillLength==0):
             zindex_exp_score["score"] = 0
         else:
             zindex_exp_score["score"] = math.ceil(40*(skillIntersection/resSkillLength))
+        if(zindex_exp_score["score"] > 40):
+            zindex_exp_score["score"] = 40
         zindex_jobfit_score["name"] = "Job Fit"
-        idealSkillLength = HISTORY_MATCH_NOISE * len(idealSkills)
+        idealSkillLength = HISTORY_IDEAL_MATCH_NOISE * len(idealSkills)
         idealIntersection = len(set(idealSkills).intersection(set(cand_resume_words_list)))
         if(idealSkillLength == 0):
             zindex_jobfit_score["score"] = 0
@@ -155,12 +163,22 @@ def reqScorer(reqParsed,jobid,idealSkills,requisition):
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_score"] = zindex_skill_score["score"]  + zindex_exp_score["score"] + zindex_jobfit_score["score"]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Scores" %(requisition,zindex_score["candidate_id"] ))
+        zindex_score["update_datetime"] = datetime.utcnow()
+        #print("Requisition %s Candidate %s Inserting Scores" %(requisition,zindex_score["candidate_id"] ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
     return("Complete")
 
 def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
+
+    reqParsedSkillList = []
+    reqParsedWordsList = []
+    for req_parsed in reqParsed:
+        for req_parsed_skill in req_parsed["parsedWords"]:
+            reqParsedWordsList.append(req_parsed_skill["word"].lower().strip())
+            if(req_parsed_skill["interpreter_value"]=="skills"):
+                reqParsedSkillList.append(req_parsed_skill["word"].lower().strip())
+    #print("Getting Parsed Resumes")
     candList = candidateId
     candList = [candList[i:i+5000] for i in range(0, len(candList), 5000)]
     for candidatesList in candList:
@@ -169,7 +187,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
         candResumeList = []
         for candidate in candResumeParsed:
             candResumeList.append(candidate["candidate_id"])
-    
+
         zindex_score = {}
         key = {}
         zindex_distribution = []
@@ -195,6 +213,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
             zindex_score["zindex_score"] = 0
             zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
             zindex_score["zindex_distribution"] = zindex_distribution
+            zindex_score["update_datetime"] = datetime.utcnow()
             #print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(reqId,candidate ))
             db.searchscore_cand_zindex_scores.update(key,zindex_score,upsert=True)
         #Candidate resume skills
@@ -226,7 +245,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
                 for skills in skillset["job_skill_names"]:
                     #print(skills["job_skill_name"])
                     cand_resume_skill_list.append(skills["job_skill_name"])
-            resWordsLength = HISTORY_MATCH_NOISE * (len(reqParsedWordsList))
+            resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))
             if(resWordsLength == 0):
                 zindex_skill_score["name"] = "Skills"
                 zindex_skill_score["score"] = 0
@@ -237,6 +256,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
                 zindex_score["zindex_score"] = 0
                 zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
                 zindex_score["zindex_distribution"] = zindex_distribution
+                zindex_score["update_datetime"] = datetime.utcnow()
                 #print("Requisition %s Candidate %s Inserting Zeroes" %(reqId,zindex_score["candidate_id"] ))
                 db.searchscore_cand_zindex_scores.update(key,zindex_score,upsert=True)
                 continue
@@ -246,15 +266,17 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
             zindex_skill_score["score"] = math.ceil(40*(wordsIntersection/resWordsLength))
             if(zindex_skill_score["score"] > 40):
                 zindex_skill_score["score"] = 40
-            resSkillLength = len(reqParsedSkillList)
+            resSkillLength = HISTORY_SKILLS_MATCH_NOISE * len(reqParsedSkillList)
             skillIntersection = len(set(reqParsedSkillList).intersection(set(cand_resume_skill_list)))
             zindex_exp_score["name"] = "Experience"
             if(resSkillLength==0):
                 zindex_exp_score["score"] = 0
             else:
                 zindex_exp_score["score"] = math.ceil(40*(skillIntersection/resSkillLength))
+            if(zindex_exp_score["score"] > 40):
+                zindex_exp_score["score"] = 40
             zindex_jobfit_score["name"] = "Job Fit"
-            idealSkillLength = HISTORY_MATCH_NOISE * len(idealSkills)
+            idealSkillLength = HISTORY_IDEAL_MATCH_NOISE * len(idealSkills)
             idealIntersection = len(set(idealSkills).intersection(set(cand_resume_words_list)))
             if(idealSkillLength == 0):
                 zindex_jobfit_score["score"] = 0
@@ -263,8 +285,8 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
             zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
             zindex_score["zindex_score"] = zindex_skill_score["score"]  + zindex_exp_score["score"] + zindex_jobfit_score["score"]
             zindex_score["zindex_distribution"] = zindex_distribution
+            zindex_score["update_datetime"] = datetime.utcnow()            
             #print("Requisition %s Candidate %s Inserting Scores" %(reqId,zindex_score["candidate_id"] ))
             db.searchscore_cand_zindex_scores.update(key,zindex_score,upsert=True)
-            
-    return("Candidates Scored")
 
+    return("Candidates Scored")

@@ -12,6 +12,8 @@ sql.uid=qatalent
 sql.pwd=z2Z*@&k(1(
 sql.database=One
 
+[LogSection]
+log.log_path=/var/talentsearch/etl_scripts/logs/
 
 [RSection]
 r.main_location=source("/var/talentsearch/R/zindex_main.r",chdir=T)
@@ -23,3 +25,9 @@ url.server_location=qapyr01.zcdev.local
 url.server_port=80
 url.debug=False
 url.timeout=1800
+
+[ScoringParametersSection]
+HISTORY_MATCH_NOISE = 0.65
+HISTORY_WORDS_MATCH_NOISE = 0.65
+HISTORY_SKILLS_MATCH_NOISE = 1.0
+HISTORY_IDEAL_MATCH_NOISE = 0.65

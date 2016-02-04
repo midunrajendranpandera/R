@@ -9,16 +9,16 @@ read t < subcand.temp1
 if [ $t -eq 1 ]
 then
 echo "Process Running"
-sleep 2m
+sleep 5m
 elif [ $t -gt 1 ]
 then
 echo "Check the process"
 sleep 2m
 else
 echo "Start the Process"
-DATE=`date +%Y-%m-%d:%H:%M:%S`
+DATE=`date +%Y%m%d`
 nohup python3 -u submitted_candidate_scoring.py  > ./logs/submitted_candidate_incremental_$DATE.log &
-sleep 1m
+sleep 5m
 fi
 done
 

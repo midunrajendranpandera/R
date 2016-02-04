@@ -15,7 +15,10 @@ from debugException import DebugException
 
 config = configparser.ConfigParser()
 config.read('../common/ConfigFile.properties')
-HISTORY_MATCH_NOISE = 0.65
+#CONSTANTS
+HISTORY_WORDS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_WORDS_MATCH_NOISE")
+HISTORY_SKILLS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_SKILLS_MATCH_NOISE")
+HISTORY_IDEAL_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_IDEAL_MATCH_NOISE")
 
 uri = config.get("DatabaseSection", "database.connection_string")
 db_name = config.get("DatabaseSection", "database.dbname")
@@ -42,7 +45,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
         candResumeList = []
         for candidate in candResumeParsed:
             candResumeList.append(candidate["candidate_id"])
-    
+
         zindex_score = {}
         key = {}
         zindex_distribution = []
@@ -99,7 +102,7 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
                 for skills in skillset["job_skill_names"]:
                     #print(skills["job_skill_name"])
                     cand_resume_skill_list.append(skills["job_skill_name"])
-            resWordsLength = HISTORY_MATCH_NOISE * (len(reqParsedWordsList))
+            resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))
             if(resWordsLength == 0):
                 zindex_skill_score["name"] = "Skills"
                 zindex_skill_score["score"] = 0
@@ -119,15 +122,17 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
             zindex_skill_score["score"] = math.ceil(40*(wordsIntersection/resWordsLength))
             if(zindex_skill_score["score"] > 40):
                 zindex_skill_score["score"] = 40
-            resSkillLength = len(reqParsedSkillList)
+            resSkillLength = HISTORY_SKILLS_MATCH_NOISE * len(reqParsedSkillList)
             skillIntersection = len(set(reqParsedSkillList).intersection(set(cand_resume_skill_list)))
             zindex_exp_score["name"] = "Experience"
             if(resSkillLength==0):
                 zindex_exp_score["score"] = 0
             else:
                 zindex_exp_score["score"] = math.ceil(40*(skillIntersection/resSkillLength))
+            if(zindex_exp_score["score"] > 40):
+                zindex_exp_score["score"] = 40
             zindex_jobfit_score["name"] = "Job Fit"
-            idealSkillLength = HISTORY_MATCH_NOISE * len(idealSkills)
+            idealSkillLength = HISTORY_IDEAL_MATCH_NOISE * len(idealSkills)
             idealIntersection = len(set(idealSkills).intersection(set(cand_resume_words_list)))
             if(idealSkillLength == 0):
                 zindex_jobfit_score["score"] = 0
@@ -143,8 +148,9 @@ def candidateScorer(candidateId,reqParsed,idealSkills,reqId):
 
 ##Main##
 jobId = list(db.category_candidate_map.find({}).distinct("global_job_category_id"))
-#jobId = [1232,1697]
-
+#jobId = [1032,1033]
+statusID = [2,3,4,6,9,10,11,12]
+#clientID = [344,345,3307,513,514,734]
 for id in jobId:
     candidates = list(db.category_candidate_map.find({"global_job_category_id":id},{"candidates":1,"_id":0}))
     for candidate in candidates:
@@ -154,28 +160,30 @@ for id in jobId:
         print("No Candidates Classified")
         continue
     candidateId = list(set(candidateId))
+    requisitionList = []
     #candResumeParsed = list(db.candidate_skills_from_parsed_resumes.find({"candidate_id": {"$in": candidateId}}, {"candidate_id": 1, "parsedWords": 1, "_id": 0}))
     #Candidate resume skills
     #cand_resume_skill_list = []
     #Candidate resume words
     #cand_resume_words_list = []
     ## - To run scoring for  all uncomment next line and comment line after next comment
-    requisitionList = list(db.requisition.find({"global_job_category_id": id,"pre_identified_req": False},{"requisition_id":1,"_id":0}))
-    print("Number of Requisitions to be scored %s" %(len(requisitionList)))
-    #requisitionList = list(db.requisition.find({"global_job_category_id": id,"pre_identified_req": False,"req_status_id" : {"$in":[2,3,6,9,10,11,12]}},{"requisition_id":1,"_id":0}))
+    #requisitionList = list(db.requisition.find({"new_global_job_category_id": id,"pre_identified_req": False},{"requisition_id":1,"_id":0}))
 
-    #requisitionList = list(db.requisition.find({"global_job_category_id": id,"pre_identified_req": False,},{"requisition_id":1,"_id":0}))
+    requisitionList = list(db.requisition.find({"new_global_job_category_id": id,"pre_identified_req": False,"req_status_id" : {"$in":statusID}},{"requisition_id":1,"_id":0}))
+
+    #requisitionList = list(db.requisition.find({"new_global_job_category_id": id,"pre_identified_req": False,},{"requisition_id":1,"_id":0}))
 
     ## - Change the client ID's for client who are running Zindex Scoring
-    #requisitionList = list(db.requisition.find({"global_job_category_id": id,"client_id":{"$in":[344,345,3307,513,514,734]},"pre_identified_req": False,"req_status_id" : {"$in":[2,3,6,9,10,11,12]}},{"requisition_id":1,"_id":0}))
+
+    #requisitionList = list(db.requisition.find({"new_global_job_category_id": id,"client_id":{"$in":clientID},"pre_identified_req": False,"req_status_id" : {"$in":statusID}},{"requisition_id":1,"_id":0}))
 
     if(not requisitionList):
         print("No Requisition for this Job ID - %s " % (id))
         continue
-    print("The number of Candidates %s for Job Id %s" %((len(candidateId),id)))
     #sampleReq = requisitionList[0]
     #sampleReq = sampleReq["requisition_id"]
     #idealSkillList = list(db.ideal_candidate_characteritics.find({"requisition_id":sampleReq},{"Skills":1,"_id":0}))
+
     idealSkillList = db.ideal_candidate_characteritics.find_one({"global_job_category_id":id},{"Skills":1,"_id":0})
     
     idealSkills = []
@@ -183,12 +191,12 @@ for id in jobId:
     #for Skills in idealSkillList:
         #idealSkills.append(Skills["Skills"])
     #idealSkills = idealSkills[0]
+    print("The number of Candidates %s for Job Id %s" %((len(candidateId),id)))
     for requisition in requisitionList:
         reqTime = time.time()
         reqParsed = list(db.requisition_skills_from_parsed_requisition.find({"requisition_id": requisition["requisition_id"]},{"parsedWords":1,"_id":0}))
         print("Working on Requisition - %s" % requisition["requisition_id"])
         #print("Parsed Resume %s" % reqParsed)
-        #print("The number of Candidates %s for Job Id %s" %((len(candidateId),id)))
         for parsedwords in reqParsed:
             parsed = parsedwords['parsedWords']
         if(len(parsed)==0):

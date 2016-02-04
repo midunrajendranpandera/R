@@ -15,7 +15,10 @@ from debugException import DebugException
 
 config = configparser.ConfigParser()
 config.read('../common/ConfigFile.properties')
-HISTORY_MATCH_NOISE = 0.65
+#CONSTANTS
+HISTORY_WORDS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_WORDS_MATCH_NOISE")
+HISTORY_SKILLS_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_SKILLS_MATCH_NOISE")
+HISTORY_IDEAL_MATCH_NOISE = config.getfloat("ScoringParametersSection","HISTORY_IDEAL_MATCH_NOISE")
 
 uri = config.get("DatabaseSection", "database.connection_string")
 db_name = config.get("DatabaseSection", "database.dbname")
@@ -50,7 +53,7 @@ def scoreInserter(requisition):
         zindex_score["zindex_score"] = 0
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate ))
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
 def reqScorer(reqParsed,jobid,idealSkills):
@@ -97,7 +100,7 @@ def reqScorer(reqParsed,jobid,idealSkills):
         zindex_score["zindex_score"] = 0
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(requisition,candidate ))
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(requisition,candidate ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
     #Candidate resume skills
@@ -130,22 +133,24 @@ def reqScorer(reqParsed,jobid,idealSkills):
             for skills in skillset["job_skill_names"]:
                 #print(skills["job_skill_name"])
                 cand_resume_skill_list.append(skills["job_skill_name"])
-        resWordsLength = HISTORY_MATCH_NOISE * (len(reqParsedWordsList))
+        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))
         canWordsLength = len(cand_resume_words_list)
         wordsIntersection = len(set(reqParsedWordsList).intersection(set(cand_resume_words_list)))
         zindex_skill_score["name"] = "Skills"
         zindex_skill_score["score"] = math.ceil(40*(wordsIntersection/resWordsLength))
         if(zindex_skill_score["score"] > 40):
             zindex_skill_score["score"] = 40
-        resSkillLength = len(reqParsedSkillList)
+        resSkillLength = HISTORY_SKILLS_MATCH_NOISE * len(reqParsedSkillList)
         skillIntersection = len(set(reqParsedSkillList).intersection(set(cand_resume_skill_list)))
         zindex_exp_score["name"] = "Experience"
         if(resSkillLength==0):
             zindex_exp_score["score"] = 0
         else:
             zindex_exp_score["score"] = math.ceil(40*(skillIntersection/resSkillLength))
+        if(zindex_exp_score["score"] > 40):
+            zindex_exp_score["score"] = 40
         zindex_jobfit_score["name"] = "Job Fit"
-        idealSkillLength = HISTORY_MATCH_NOISE * len(idealSkills)
+        idealSkillLength = HISTORY_IDEAL_MATCH_NOISE * len(idealSkills)
         idealIntersection = len(set(idealSkills).intersection(set(cand_resume_words_list)))
         if(idealSkillLength == 0):
             zindex_jobfit_score["score"] = 0
@@ -156,7 +161,7 @@ def reqScorer(reqParsed,jobid,idealSkills):
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_score"] = zindex_skill_score["score"]  + zindex_exp_score["score"] + zindex_jobfit_score["score"]
         zindex_score["zindex_distribution"] = zindex_distribution
-        print("Requisition %s Candidate %s Inserting Scores" %(requisition,zindex_score["candidate_id"] ))
+        #print("Requisition %s Candidate %s Inserting Scores" %(requisition,zindex_score["candidate_id"] ))
         db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
     return("Complete")
@@ -164,15 +169,18 @@ def reqScorer(reqParsed,jobid,idealSkills):
 try:
     requisitionList = list(db.requisition_candidate.find({}).distinct("requisition_id"))
    
-    ## - Change the Client ID's to enable for Particular Clients ; To run scoring for all comment the next 5 lines
-
-    reqList = []
-    temprequisitionList = list(db.requisition.find({"client_id":{"$in":[344,345,3307,513,514,734]},"pre_identified_req": False,"req_status_id" : {"$in":[2,3,6,9,10,11,12]}},{"requisition_id":1,"_id":0}))
-    for requisition in temprequisitionList:
-        reqList.append(requisition["requisition_id"])
-    requisitionList  = list(set(requisitionList).intersection(set(reqList)))
+    ## - Change the Client ID's to enable for Particular Clients uncomment next 6 lines; To run scoring for all comment the next 6 lines
+    #statusID = [2,3,4,6,9,10,11,12]
+    #reqList = []
+    #clientID = [344,345,3307,513,514,734]
+    ## - ** Do not uncomment ** temprequisitionList = list(db.requisition.find({"client_id":{"$in":clientID},"pre_identified_req": False,"req_status_id" : {"$in":statusID}},{"requisition_id":1,"_id":0}))
+    #temprequisitionList = list(db.requisition.find({"client_id":{"$in":clientID},"pre_identified_req": False},{"requisition_id":1,"_id":0}))
+    #for requisition in temprequisitionList:
+        #reqList.append(requisition["requisition_id"])
+    #requisitionList  = list(set(requisitionList).intersection(set(reqList)))
     
     ##  -  Scoring Starts
+
     for requisition in requisitionList:
         reqTime = time.time()
         reqParsed = list(db.requisition_skills_from_parsed_requisition.find({"requisition_id":requisition},{"parsedWords":1,"_id":0}))
@@ -185,16 +193,17 @@ try:
             status = scoreInserter(requisition)
             print("Execution Status %s - Time Elapsed %s" % (status, time.time() - reqTime))
             continue
-        jobid = list(db.requisition.find({"requisition_id":requisition},{"global_job_category_id":1,"_id":0}))
+        jobid = list(db.requisition.find({"requisition_id":requisition},{"new_global_job_category_id":1,"_id":0}))
         for id in jobid:
-            gjid1 = id["global_job_category_id"]
+            gjid1 = id["new_global_job_category_id"]
         #idealSkillList = list(db.ideal_candidate_characteritics.find({"requisition_id":requisition},{"Skills":1,"_id":0}))
         idealSkillList = db.ideal_candidate_characteritics.find_one({"global_job_category_id":gjid1},{"Skills":1,"_id":0})
-       #idealSkillList = db.ideal_candidate_characteritics.find({"requisition_id":requisition},{"Skills":1,"_id":0})
         idealSkills = idealSkillList['Skills']
+
         #for Skills in idealSkillList:
             #idealSkills.append(Skills["Skills"])
         #idealSkills = idealSkills[0]
+
         reqTime = time.time()
         status = reqScorer(reqParsed,jobid,idealSkills)
         print("Execution Status %s - Time Elapsed %s" % (status, time.time() - reqTime))
