@@ -129,9 +129,9 @@ try:
         candidate_classifier_incre(candidateIdList[i], charcteristics_list)
         log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] classification elapsed time [" + str(datetime.now() - classiferBeginTime) + "]" + "\n")
 
-        scoreBeginTime = datetime.now()
-        candidateIncrementalScorer(candidateIdList[i], db)
-        log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] scoring elapsed time [" + str(datetime.now() - scoreBeginTime) + "]" + "\n")
+        #scoreBeginTime = datetime.now()
+        #candidateIncrementalScorer(candidateIdList[i], db)
+        #log_file.write("[" + datetime.now().isoformat() + "] CandidateId [" + str(candidateIdList[i]) + "] scoring elapsed time [" + str(datetime.now() - scoreBeginTime) + "]" + "\n")
 
         count += 1
         db.candidate_resume_text.update( {"candidate_id": candidateIdList[i]}, { "$set" : {"etl_process_flag" : True} } )
