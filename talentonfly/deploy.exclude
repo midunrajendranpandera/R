@@ -1,0 +1,8 @@
+README.md
+deploy.exclude
+deploy.sh
+deploySourceOnly.sh
+common/ConfigFile.properties
+common/ConfigFile.properties.*
+R/rparam.r
+R/rparam.r.*
