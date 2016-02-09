@@ -4,6 +4,8 @@ from debugException import DebugException
 from pymongo import MongoClient
 from ZCLogger import ZCLogger
 from math import sin, cos, sqrt, atan2, radians
+from datetime import datetime, date, time
+from zindexScorer import scoreRetriever
 #from rzindex_wrapper import rzindex_wrapper
 
 config = configparser.ConfigParser()
@@ -202,24 +204,28 @@ def scoreCandidates(requisition, candidate_list, appendRequisition, score_collec
    #print(reqId)
 
    try:
-      score_map = lookupCandidateScores(reqId, candidate_id_list, score_collection_name)
+      #strt = datetime.now()
+      #score_map = lookupCandidateScores(reqId, candidate_id_list, score_collection_name)
+      score_map = scoreRetriever(reqId, candidate_id_list, score_collection_name)
+      #print("Time taken to score [%s] candidates [%s] seconds" %(len(candidate_id_list), (datetime.now() - strt)))
       ### If the request is for master_supplier_id, then look for any submitted scores as well
-      if mspFlag or searchAndScoreFlag:
+      #if mspFlag or searchAndScoreFlag:
          #print("mspFlag is TRUE")
-         submitted_score_collection_name = "requisition_cand_zindex_scores"
-         score_map2 = lookupCandidateScores(reqId, candidate_id_list, submitted_score_collection_name)
+         #submitted_score_collection_name = "requisition_cand_zindex_scores"
+         #score_map2 = lookupCandidateScores(reqId, candidate_id_list, submitted_score_collection_name)
+         #score_map2 = scoreRetriever(reqId, candidate_id_list, score_collection_name)
          #print (str(score_map2))
-         if len(score_map2) > 0 or score_map2 is not None:
-            for cand in candidate_id_list:
-               try:
+         #if len(score_map2) > 0 or score_map2 is not None:
+            #for cand in candidate_id_list:
+               #try:
                   #print(str(score_map2[cand]))
-                  sm = score_map2[cand]
-                  if sm is not None:
+                  #sm = score_map2[cand]
+                  #if sm is not None:
                      #print("candidateId : [" + str(sm["candidate_id"]) + "] ZindexScore : [" + str(sm["zindex_score"]) + "]  ZindexDistribution : [" + str(sm["zindex_distribution"]) + "]")
                      #print(str(sm))
-                     score_map[sm["candidate_id"]] = sm
-               except Exception as e:
-                  None
+                     #score_map[sm["candidate_id"]] = sm
+               #except Exception as e:
+                 # None
 
    except Exception as e:
       DebugException(e)
@@ -335,4 +341,5 @@ def scoreCandidates(requisition, candidate_list, appendRequisition, score_collec
       return_list.append(candidate)
 
    return return_list
+
 
