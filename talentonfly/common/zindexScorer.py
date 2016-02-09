@@ -59,6 +59,7 @@ def zeroInserter(requisition,candidate_id_list):
         #print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate["candidate_id"] ))
         #db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
     return(zindex_score_map)
+
 def zindexScorer(reqParsed,candidate_id_list,db,idealSkills,requisition):
     reqParsedSkillList = []
     reqParsedWordsList = []
@@ -134,7 +135,7 @@ def zindexScorer(reqParsed,candidate_id_list,db,idealSkills,requisition):
             for skills in skillset["job_skill_names"]:
                 #print(skills["job_skill_name"])
                 cand_resume_skill_list.append(skills["job_skill_name"])
-        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))
+        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))        
         canWordsLength = len(cand_resume_words_list)
         wordsIntersection = len(set(reqParsedWordsList).intersection(set(cand_resume_words_list)))
         zindex_skill_score["name"] = "Skills"
@@ -176,11 +177,13 @@ def scoreRetriever(reqId, candidate_id_list, score_collection_name):
             reqParsed = []
     if(len(reqParsed) == 0):
         zindex_score_map = zeroInserter(reqId,candidate_id_list)
-        return(zindex_score_map)
+        return(zindex_score_map)        
     for id in jobid:
         gjid1 = id["new_global_job_category_id"]
     idealSkillList = db.ideal_candidate_characteritics.find_one({"global_job_category_id":gjid1},{"Skills":1,"_id":0})
     idealSkills = idealSkillList['Skills']
     zindex_score_map = zindexScorer(reqParsed,candidate_id_list,db,idealSkills,reqId)
     return(zindex_score_map)
+	
+   
 
