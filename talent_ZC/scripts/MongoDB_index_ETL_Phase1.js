@@ -40,12 +40,25 @@ db.candidate.createIndex(
 );
 
 // indx_name = "candidate_UpdateDate_IDX3"
+
+
 db.candidate.createIndex( 
 { 
   "update_date" : -1
 }, 
 { 
   "name" : "candidate_UpdateDate_IDX3", 
+  "background" : true
+}
+);
+
+// indx_name = "candidate_EtlProcessFlag_IDX4"
+db.candidate.createIndex( 
+{ 
+  "etl_process_flag" : 1
+}, 
+{ 
+  "name" : "candidate_EtlProcessFlag_IDX4", 
   "background" : true
 }
 );
@@ -110,6 +123,17 @@ db.requisition.createIndex(
 }
 );
 
+// indx_name = "requisition_EtlProcessFlag_IDX5"
+db.requisition.createIndex( 
+{ 
+  "etl_process_flag" : 1
+}, 
+{ 
+  "name" : "requisition_EtlProcessFlag_IDX5", 
+  "background" : true
+}
+);
+
 
 // ### Collection: candiate_resume_text ###
 // indx_name = "candidate_resume_text_CandidateID_UK1"
@@ -142,6 +166,17 @@ db.candidate_resume_text.createIndex(
 }, 
 { 
   "name" : "candidate_resume_text_UpdateDate_IDX2", 
+  "background" : true
+}
+);
+
+// indx_name = "candidate_resume_text_EtlProcessFlag_IDX3"
+db.candidate_resume_text.createIndex( 
+{ 
+  "etl_process_flag" : 1
+}, 
+{ 
+  "name" : "candidate_resume_text_EtlProcessFlag_IDX3", 
   "background" : true
 }
 );
@@ -195,6 +230,28 @@ db.requisition_candidate.createIndex(
 }
 );
 
+// indx_name = "requisition_candidate_EtlProcessFlag_IDX4"
+db.requisition_candidate.createIndex( 
+{ 
+  "etl_process_flag" : 1
+}, 
+{ 
+  "name" : "requisition_candidate_EtlProcessFlag_IDX4", 
+  "background" : true
+}
+);
+
+// indx_name = "requisition_candidate_CandidateId_RequisitionSubmissionStatusId_IDX5"
+db.requisition_candidate.createIndex( 
+{ 
+  "candidate_id" : 1,
+  "requisition_submission_status_id" : 1
+}, 
+{ 
+  "name" : "requisition_candidate_CandidateId_RequisitionSubmissionStatusId_IDX5", 
+  "background" : true
+}
+);
 
 // ### Collection: vendor ###
 // indx_name="vendor_ReqClientId_MasterSupplierId_VendorId_ClientID_IDX1"
@@ -230,6 +287,19 @@ db.requisition_candidate_division.createIndex(
 }, 
 { 
   "name" : "requisition_candidate_division_CilentId_IDX2", 
+  "background" : true
+}
+);
+
+// indx_name="requisition_candidate_division_CilentId_Active_IDX3"
+db.requisition_candidate_division.createIndex( 
+{ 
+  "client_id" : 1,
+  "active" :1
+  
+}, 
+{ 
+  "name" : "requisition_candidate_division_CilentId_Active_IDX3", 
   "background" : true
 }
 );
