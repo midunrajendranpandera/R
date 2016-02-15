@@ -61,6 +61,6 @@ for client_id in client_id_list:
     s_m_diff = list(set(sqlPreFilterCandList) - set(mongoPreFilterCandList))
     candidateDict["sql-mongo"] = s_m_diff
     candidateDict["client_id"] = client_id
-    candidateDict["mongo_time"] = mongoTime
-    candidateDict["sql_time"] = sqlTime
+    candidateDict["mongo_time"] = str(mongoTime)
+    candidateDict["sql_time"] = str(sqlTime)
     db.pre_filter_check.update(key,candidateDict,upsert=True)
