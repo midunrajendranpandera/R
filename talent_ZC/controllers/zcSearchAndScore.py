@@ -21,7 +21,7 @@ from ZCLogger import ZCLogger
 from inputParams import InputParamsObj
 from dbWrite import writeScoresToDb
 from dbWrite import writeScoresToAudit
-from writeToSqlServer import getPreFilterCandidateList
+#from writeToSqlServer import getPreFilterCandidateList
 
 config = configparser.ConfigParser()
 config.read('./common/ConfigFile.properties')
@@ -122,6 +122,28 @@ def getCandidateList(paramsObj, relevant_vendor_ids, category_name, relevant_can
 	#print("---Cursor Time: %s seconds ---" % (datetime.now() - ex_time))
 	return candidate_cursor
 
+def mongoPreFilter(client_id):
+    candidate1 = list(db.candidate.find({ "opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
+    candidate2 = list(db.candidate.find({ "allow_talent_cloud_search_for_all_division": True }).distinct("candidate_id"))
+    cand1 = list(db.candidate.find({ "allow_talent_cloud_search_for_all_division": False }).distinct("candidate_id"))
+    cand2 = list(db.requisition_candidate_division.find({"client_id": client_id, "active": True}).distinct("candidate_id"))
+    cand3 = list(set(cand1).intersection(set(cand2)))
+    candidate2 = list(set(candidate2 + cand3))
+    candidate3 = list(db.candidate.find({"master_supplier_id": -1}).distinct("candidate_id"))
+    query_dict = {
+        "$or":[{"client_id": client_id, "talent_cloud_agreement": 0, "status_id": {"$in": [2,3]}},
+               {"client_id": client_id, "talent_cloud_agreement": 1, "status_id": {"$in": [1,2,3]}},
+               {"client_id": 30, "status_id": {"$in": [2,3]}}
+            ]
+    }
+    msp = list(db.vendor_master.find(query_dict).distinct("master_supplier_id"))
+    cand1 = list(db.candidate.find({ "master_supplier_id": { "$in": msp } }).distinct("candidate_id"))
+    candidate3 = list(set(candidate3+cand1))
+    preFilterCandidate = set(candidate1).intersection(set(candidate2))
+    preFilterCandidate = list(set(preFilterCandidate).intersection(set(candidate3)))
+    return(preFilterCandidate)
+
+	
 def getCandidateList2(final_candidate_ids):
         candidate_table = db["candidate"]
 
@@ -187,16 +209,17 @@ def getSearchAndScore(reqId, minScore):
 		category_id = reqObj["new_global_job_category_id"]
 		relevant_candidate_ids = getRelevantCandidates(category_id)
 
-		if relevant_candidate_ids is None or len(relevant_candidate_ids) == 0:
-			summaryObj = ZcSummaryObj(0, True, "No candidates found under relevant job classification")
-			return(summaryObj.toJson())	
+		#if relevant_candidate_ids is None or len(relevant_candidate_ids) == 0:
+			#summaryObj = ZcSummaryObj(0, True, "No candidates found under relevant job classification")
+			#return(summaryObj.toJson())	
 
 		#queryParams = QueryParams(client_id)
 		#relevant_vendor_ids = getRelevantVendorIds(queryParams)
 		#candidate_list = getCandidateList(queryParams, relevant_vendor_ids, category_id, relevant_candidate_ids)
 
 		### Get prefiltered candidates from SQL Server
-		preFilterCandidateList = getPreFilterCandidateList(client_id)
+		#preFilterCandidateList = getPreFilterCandidateList(client_id)
+		preFilterCandidateList = mongoPreFilter(client_id)
 
 		### Get submitted candidates list from requisition_candidate collection
 		submittedCandidateList = getSubmittedCandidates(reqId)

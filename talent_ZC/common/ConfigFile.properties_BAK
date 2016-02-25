@@ -3,8 +3,8 @@ database.connection_string=mongodb://qacandidateuser:hpbVLH6j@qamongodb01.zcdev.
 database.dbname=candidate_model_qajupiter
 
 [SQLDatabaseSection]
-sql.connection_string="DRIVER={FreeTDS2};SERVER=QAJupiterSQL02.zcdev.local;PORT=1433;TDS_Version=7.2;UID=qatalent;PWD=z2Z*@&k(1(;DATABASE=One"
-sql.driver={FreeTDS2}
+sql.connection_string="DRIVER={FreeTDS};SERVER=QAJupiterSQL02.zcdev.local;PORT=1433;TDS_Version=7.2;UID=qatalent;PWD=z2Z*@&k(1(;DATABASE=One"
+sql.driver={FreeTDS}
 sql.server=QAJupiterSQL02.zcdev.local
 sql.port=1433
 sql.tds_version=7.2

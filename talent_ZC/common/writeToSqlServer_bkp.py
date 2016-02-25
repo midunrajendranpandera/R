@@ -23,8 +23,8 @@ database=config.get("SQLDatabaseSection", "sql.database")
 ### <TODO> configure the connection parameters into properties file later
 #conn = pyodbc.connect("DRIVER={FreeTDS};SERVER=QASaturnSQL01.zcdev.local;PORT=1433;TDS_Version=7.2;UID=qatalent;PWD=z2Z*@&k(1(;DATABASE=One")
 
-#connString = "DRIVER="+driver+";"+"SERVER="+server+";"+"PORT="+port+";"+"TDS_Version="+tds_version+";"+"UID="+uid+";"+"PWD="+pwd+";"+"DATABASE="+database
-#conn = pyodbc.connect(connString)
+connString = "DRIVER="+driver+";"+"SERVER="+server+";"+"PORT="+port+";"+"TDS_Version="+tds_version+";"+"UID="+uid+";"+"PWD="+pwd+";"+"DATABASE="+database
+conn = pyodbc.connect(connString)
 
 def writeCandidateScoreToSqlServer(reqId, isSubmitted, masterSupplierId, scores, summary):
 
@@ -35,11 +35,8 @@ def writeCandidateScoreToSqlServer(reqId, isSubmitted, masterSupplierId, scores,
       is_submitted = isSubmitted
       master_supplier_id = masterSupplierId
 
-      connString = "DRIVER="+driver+";"+"SERVER="+server+";"+"PORT="+port+";"+"TDS_Version="+tds_version+";"+"UID="+uid+";"+"PWD="+pwd+";"+"DATABASE="+database
-      conn = pyodbc.connect(connString)
-      
       cursor = conn.cursor()
-      
+
       ### First, check if there is any record with this requisition_id
       SQLCmd = ("SELECT RequestID as request_id from  CandidateZindexScore WHERE RequisitionID = ? and IsSubmitted = ? and MasterSupplierId = ? ")
       cursor.execute(SQLCmd, req_id, is_submitted, master_supplier_id)
@@ -109,7 +106,6 @@ def writeCandidateScoreToSqlServer(reqId, isSubmitted, masterSupplierId, scores,
             cursor.execute(SQLCommand, Values)
 
       conn.commit()
-      #cursor.close()
       #conn.close()
       return (summary_id)
 

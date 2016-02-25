@@ -11,7 +11,7 @@ from debugException import DebugException
 from ZCLogger import ZCLogger
 from datetime import datetime, date, time
 from zcSummaryObj import ZcSummaryObj
-#import cherrypy
+import cherrypy
 import checkService
 
 config = configparser.ConfigParser()
@@ -117,7 +117,7 @@ def isServiceAlive():
         #return (summaryObj.toJson())
 
 
-#bottle.run(host=host, port=port, debug=debug,server='cherrypy')
-bottle.run(host=host, port=port, debug=debug)
+bottle.run(host=host, port=port, debug=debug,server='cherrypy')
+#bottle.run(host=host, port=port, debug=debug)
 
 
