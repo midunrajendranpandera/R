@@ -143,6 +143,25 @@ def mongoPreFilter(client_id):
     preFilterCandidate = list(set(preFilterCandidate).intersection(set(candidate3)))
     return(preFilterCandidate)
 
+def newMongoPreFilter(client_id):
+    query_dict = {
+            "$or":[{"client_id": client_id, "talent_cloud_agreement": 0, "status_id": {"$in": [2,3]}},
+                   {"client_id": client_id, "talent_cloud_agreement": 1, "status_id": {"$in": [1,2,3]}},
+                   {"client_id": 30, "status_id": {"$in": [2,3]}}
+                ]
+    }
+    msp = list(db.vendor_master.find(query_dict).distinct("master_supplier_id"))
+    cand1 = list(db.candidate.find({ "master_supplier_id": { "$in": msp } }).distinct("candidate_id"))
+    candidate3 = list(db.candidate.find({"master_supplier_id": -1}).distinct("candidate_id"))
+    candidate3 = list(set(candidate3+cand1))
+    candidate2 = list(db.candidate.find({"allow_talent_cloud_search_for_all_division": True }).distinct("candidate_id"))
+    cand1 = list(db.candidate.find({ "allow_talent_cloud_search_for_all_division": False }).distinct("candidate_id"))
+    cand2 = list(db.requisition_candidate_division.find({"client_id": client_id, "active": True}).distinct("candidate_id"))
+    cand3 = list(set(cand1).intersection(set(cand2)))
+    candidate2 = list(set(candidate2 + cand3))
+    preFilterCandidate = list(set(candidate2).intersection(set(candidate3)))
+    finalCandidateList = list(db.candidate.find({ "candidate_id":{"$in":preFilterCandidate},"opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
+    return(finalCandidateList)
 	
 def getCandidateList2(final_candidate_ids):
         candidate_table = db["candidate"]
@@ -219,7 +238,8 @@ def getSearchAndScore(reqId, minScore):
 
 		### Get prefiltered candidates from SQL Server
 		#preFilterCandidateList = getPreFilterCandidateList(client_id)
-		preFilterCandidateList = mongoPreFilter(client_id)
+		#preFilterCandidateList = mongoPreFilter(client_id)
+		preFilterCandidateList = newMongoPreFilter(client_id)
 
 		### Get submitted candidates list from requisition_candidate collection
 		submittedCandidateList = getSubmittedCandidates(reqId)
