@@ -1,27 +1,22 @@
 #! /usr/local/bin/python3.4
 import sys
 sys.path.append('./controllers')
-sys.path.append('./common')
 import bottle
 import pymongo
-import configparser
 from bottle import route, run, request, response
 import zcCandidateScore, zcSearchAndScore
+#from zcCandidateScore import getCandidateScore
+#from zcSearchAndScore import getSearchAndScore
 from debugException import DebugException
 from ZCLogger import ZCLogger
 from datetime import datetime, date, time
-from zcSummaryObj import ZcSummaryObj
-#import cherrypy
-import checkService
 
-config = configparser.ConfigParser()
-config.read('./common/ConfigFile.properties')
-
-host = config.get("URLSection", "url.server_location")
-port = config.get("URLSection", "url.server_port")
-debug = config.get("URLSection", "url.debug")
-
+#uri = "mongodb://candidateuser:bdrH94b9tanQ@devmongo01.zcdev.local:27000/?authSource=candidate_model"
+#client=MongoClient(uri)
+#db=client.candidate_model
 logger = ZCLogger()
+
+is_local_dev = True
 
 def enable_cors(fn):
     def _enable_cors(*args, **kwargs):
@@ -45,7 +40,7 @@ def searchAndScore():
     reqId = request.GET.get('requisition_id', '').strip()
     minScore = request.GET.get('min_score', '').strip()
 
-    #print("[searchAndScore]  reqId [" + reqId + "] minScore [" + minScore + "]")
+    print("[searchAndScore]  reqId [" + reqId + "] minScore [" + minScore + "]")
 
     msg = ("[SearchAndScore]  CallStartTime [" + callStartTime + "]  reqId [" + reqId + "]  minScore [" + minScore +"]")
     logger.log(msg)
@@ -60,10 +55,7 @@ def searchAndScore():
     except Exception as e:
         DebugException(e)
         response.status = 500
-        #return ("Internal Error: %s" % e)
-        msg = ("Internal Error: %s" % e)
-        summaryObj = ZcSummaryObj(-1, False, msg)
-        return (summaryObj.toJson())
+        return ("Internal Error: %s" % e)
 
 @enable_cors
 @route('/candidateScore/',  method=['OPTIONS','GET'])
@@ -86,38 +78,10 @@ def candidateScore():
     except Exception as e:
         DebugException(e)
         response.status = 500
-        #return("Internal Error: %s" % e)
-        msg = ("Internal Error: %s" % e)
-        summaryObj = ZcSummaryObj(-1, False, msg)
-        return (summaryObj.toJson())
+        return("Internal Error: %s" % e)
 
-# Check if service is live and responding
-@enable_cors
-@route('/isServiceAlive/',  method=['OPTIONS','GET'])
-def isServiceAlive():
-    callStartTime = datetime.now().isoformat()
-    msg = "[isServiceAlive] Call start time [" + callStartTime + "]"
-    logger.log(msg)
-    successStatus = False
-    try:
-        resp=checkService.getServiceStatus()
-        msg = "Service status returned [" + str(resp) + "]"
-        if( resp == 1):
-            successStatus = True
-        else:
-            successStatus = False
-        summaryObj = ZcSummaryObj(resp, successStatus, msg)
-        return (summaryObj.toJson())
-    except Exception as e:
-        DebugException(e)
-        response.status = 500
-        msg = ("Internal Error: %s" % e)
-        return(msg) 
-        #summaryObj = ZcSummaryObj(-1, False, msg)
-        #return (summaryObj.toJson())
-
-
-#bottle.run(host=host, port=port, debug=debug,server='cherrypy')
-bottle.run(host=host, port=port, debug=debug)
-
+if is_local_dev:
+    run(host='localhost', port=8080, debug=True)
+else:
+    run(host='devpyr01.zcdev.local', port=8080, debug=True)
 
