@@ -130,18 +130,22 @@ def mongoPreFilter(client_id):
                 ]
     }
     msp = list(db.vendor_master.find(query_dict).distinct("master_supplier_id"))
-    cand1 = list(db.candidate.find({ "master_supplier_id": { "$in": msp } }).distinct("candidate_id"))
-    candidate3 = list(db.candidate.find({"master_supplier_id": -1}).distinct("candidate_id"))
-    candidate3 = list(set(candidate3+cand1))
-    query_dict2 = {
+    query_dict = {
+           "$or":[{ "master_supplier_id": { "$in": msp }},
+                   {"master_supplier_id": -1}
+                ]
+    }
+    candidate3 = list(db.candidate.find(query_dict).distinct("candidate_id"))
+    query_dict = {
             "$or":[{"allow_talent_cloud_search_for_all_division": True},
                    {"allow_talent_cloud_search_for_all_division": False,"candidate_divisions.client_id": client_id, "candidate_divisions.active": True},
                 ]
     }
-    candidate2 = list(db.candidate.find(query_dict2).distinct("candidate_id"))
+    candidate2 = list(db.candidate.find(query_dict).distinct("candidate_id"))
     preFilterCandidate = list(set(candidate2).intersection(set(candidate3)))
     finalCandidateList = list(db.candidate.find({ "candidate_id":{"$in":preFilterCandidate},"opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
     return(finalCandidateList)
+
 	
 def getCandidateList2(final_candidate_ids):
         candidate_table = db["candidate"]

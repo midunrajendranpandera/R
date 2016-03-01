@@ -130,11 +130,11 @@ def zindexScorer(reqParsed,candidate_id_list,db,idealSkills,requisition):
             cand_resume_words_list.append(cand_resume_skill["word"].lower().strip())
             if(cand_resume_skill["interpreter_value"]=="skills"):
                 cand_resume_skill_list.append(cand_resume_skill["word"].lower().strip())
-        candidateSkill = list(db.candidate.find({"candidate_id":cand_resume_parsed["candidate_id"]}, {"candidate_id":1,"job_skill_names": 1,"_id":0}))
-        for skillset in candidateSkill:
-            for skills in skillset["job_skill_names"]:
+        #candidateSkill = list(db.candidate.find({"candidate_id":cand_resume_parsed["candidate_id"]}, {"candidate_id":1,"job_skill_names": 1,"_id":0}))
+        #for skillset in candidateSkill:
+            #for skills in skillset["job_skill_names"]:
                 #print(skills["job_skill_name"])
-                cand_resume_skill_list.append(skills["job_skill_name"])
+                #cand_resume_skill_list.append(skills["job_skill_name"])
         resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))        
         canWordsLength = len(cand_resume_words_list)
         wordsIntersection = len(set(reqParsedWordsList).intersection(set(cand_resume_words_list)))
