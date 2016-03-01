@@ -12,9 +12,6 @@ from pymongo import MongoClient
 from dateutil import parser
 from collections import Counter
 from debugException import DebugException
-from multiprocessing import Lock, Process, Queue, current_process,Manager
-import itertools
-import math
 
 config = configparser.ConfigParser()
 config.read('./common/ConfigFile.properties')
@@ -31,18 +28,71 @@ db = client[db_name]
 
 startTime = time.time()
 
-#def workerNoResume(candNoResume,requisition):
-def workerNoResume(work_queue,work_req_queue,done_queue):
-    zindex_score_map_worker_no_resume = {}
-    requisition = work_req_queue
-    for candidate in iter(work_queue.get, 'STOP' ):
-        key = {}
+def zeroInserter(requisition,candidate_id_list):
+    #subCand = list(db.requisition_candidate.find({"requisition_id":requisition},{"candidate_id":1,"_id":0}))
+    zindex_score_map = {}
+    for candidate in candidate_id_list:
+        #print(candidate)
+        #print(type(candidate))
         zindex_score = {}
+        key = {}
+        zindex_distribution = []
         zindex_skill_score = {}
         zindex_exp_score = {}
         zindex_jobfit_score = {}
         zindex_distribution = []
-        ThreadTest = {}
+        key["requisition_id"] = requisition
+        key["candidate_id"] = candidate["candidate_id"]
+        zindex_score["candidate_id"] =  candidate["candidate_id"]
+        zindex_score["requisition_id"] = requisition
+        zindex_skill_score["name"] = "Skills"
+        zindex_skill_score["score"] = 0
+        zindex_exp_score["name"] = "Experience"
+        zindex_exp_score["score"] = 0
+        zindex_jobfit_score["name"] = "Job Fit"
+        zindex_jobfit_score["score"] = 0
+        zindex_score["zindex_score"] = 0
+        zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
+        zindex_score["zindex_distribution"] = zindex_distribution
+        zindex_score_map[candidate] = zindex_score
+        #zindex_score["update_datetime"] = datetime.utcnow()
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate["candidate_id"] ))
+        #db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
+    return(zindex_score_map)
+
+def zindexScorer(reqParsed,candidate_id_list,db,idealSkills,requisition):
+    reqParsedSkillList = []
+    reqParsedWordsList = []
+    for req_parsed in reqParsed:
+        for req_parsed_skill in req_parsed["parsedWords"]:
+            reqParsedWordsList.append(req_parsed_skill["word"].lower().strip())
+            if(req_parsed_skill["interpreter_value"]=="skills"):
+                reqParsedSkillList.append(req_parsed_skill["word"].lower().strip())
+
+    #subCand = list(db.requisition_candidate.find({"requisition_id":requisition},{"candidate_id":1,"_id":0}))
+    #subCandList = []
+    #for candidate in subCand:
+        #subCandList.append(candidate["candidate_id"])
+    candResumeParsed = list(db.candidate_skills_from_parsed_resumes.find({"candidate_id":{"$in": candidate_id_list}}, {"candidate_id": 1, "parsedWords": 1, "_id": 0}))
+    #candResumeParsed = list(db.candidate_skills_from_parsed_resumes.find({"$or": subCand}, {"candidate_id": 1, "parsedWords": 1, "_id": 0}))
+    candResumeList = []
+    for candidate in candResumeParsed:
+        candResumeList.append(candidate["candidate_id"])
+
+    zindex_score_map = {}
+    key = {}
+    zindex_distribution = []
+    zindex_skill_score = {}
+    zindex_exp_score = {}
+    zindex_jobfit_score = {}
+    zindex_distribution = []
+
+    # set operation example  a - b   # letters in a but not in b
+    totalCandSubmission = set(candidate_id_list)
+    candWithResume = set(candResumeList)
+    candNoResume = list(totalCandSubmission-candWithResume)
+    zindex_score = {}
+    for candidate in candNoResume:
         key["requisition_id"] = requisition
         key["candidate_id"] = candidate
         zindex_score["candidate_id"] =  candidate
@@ -56,20 +106,13 @@ def workerNoResume(work_queue,work_req_queue,done_queue):
         zindex_score["zindex_score"] = 0
         zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
         zindex_score["zindex_distribution"] = zindex_distribution
-        zindex_score_map_worker_no_resume[candidate] = zindex_score
-    #print(zindex_score_map_worker_no_resume)
-    done_queue.put(zindex_score_map_worker_no_resume)
+        zindex_score_map[candidate] = zindex_score
+        #zindex_score["update_datetime"] = datetime.utcnow()
+        #print("Requisition %s Candidate %s Inserting Zeroes [No Resume]" %(requisition,candidate ))
+        #db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
 
-def workerWithResume(work_queue_resume, reqParsedSkillList,reqParsedWordsList,requisition,idealSkills,candidate_resume_parsed_mgr, done_queue_resume):
-    zindex_score_map_resume = {}
-
-    for cand_resume_parsed in  candidate_resume_parsed_mgr:
-        key = {}
+    for cand_resume_parsed in candResumeParsed:
         zindex_score = {}
-        zindex_skill_score = {}
-        zindex_exp_score = {}
-        zindex_jobfit_score = {}
-        zindex_distribution = []
         #Candidate resume skills
         cand_resume_skill_list = []
         #Candidate resume words
@@ -83,10 +126,6 @@ def workerWithResume(work_queue_resume, reqParsedSkillList,reqParsedWordsList,re
         zindex_skill_score = {}
         zindex_exp_score = {}
         zindex_jobfit_score = {}
-
-        ##cand_resume_parsed["parsedWords"]
-        #parsedWords = candResumeParsed["candidate"]["parsedWords"]
-
         for cand_resume_skill in cand_resume_parsed["parsedWords"]:
             cand_resume_words_list.append(cand_resume_skill["word"].lower().strip())
             if(cand_resume_skill["interpreter_value"]=="skills"):
@@ -96,7 +135,7 @@ def workerWithResume(work_queue_resume, reqParsedSkillList,reqParsedWordsList,re
             #for skills in skillset["job_skill_names"]:
                 #print(skills["job_skill_name"])
                 #cand_resume_skill_list.append(skills["job_skill_name"])
-        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))
+        resWordsLength = HISTORY_WORDS_MATCH_NOISE * (len(reqParsedWordsList))        
         canWordsLength = len(cand_resume_words_list)
         wordsIntersection = len(set(reqParsedWordsList).intersection(set(cand_resume_words_list)))
         zindex_skill_score["name"] = "Skills"
@@ -125,123 +164,9 @@ def workerWithResume(work_queue_resume, reqParsedSkillList,reqParsedWordsList,re
         zindex_score["zindex_score"] = zindex_skill_score["score"]  + zindex_exp_score["score"] + zindex_jobfit_score["score"]
         zindex_score["zindex_distribution"] = zindex_distribution
         #zindex_score["update_datetime"] = datetime.utcnow()
-        zindex_score_map_resume[zindex_score["candidate_id"]] = zindex_score
+        zindex_score_map[zindex_score["candidate_id"]] = zindex_score
         #print("Requisition %s Candidate %s Inserting Scores" %(requisition,zindex_score["candidate_id"] ))
         #db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
-    return(zindex_score_map_resume)
-
-
-def zeroInserter(requisition,candidate_id_list):
-    #subCand = list(db.requisition_candidate.find({"requisition_id":requisition},{"candidate_id":1,"_id":0}))
-    zindex_score_map = {}
-    for candidate in candidate_id_list:
-        #print(candidate)
-        #print(type(candidate))
-        zindex_score = {}
-        key = {}
-        zindex_distribution = []
-        zindex_skill_score = {}
-        zindex_exp_score = {}
-        zindex_jobfit_score = {}
-        key["requisition_id"] = requisition
-        key["candidate_id"] = candidate["candidate_id"]
-        zindex_score["candidate_id"] =  candidate["candidate_id"]
-        zindex_score["requisition_id"] = requisition
-        zindex_skill_score["name"] = "Skills"
-        zindex_skill_score["score"] = 0
-        zindex_exp_score["name"] = "Experience"
-        zindex_exp_score["score"] = 0
-        zindex_jobfit_score["name"] = "Job Fit"
-        zindex_jobfit_score["score"] = 0
-        zindex_score["zindex_score"] = 0
-        zindex_distribution = [zindex_skill_score,zindex_exp_score,zindex_jobfit_score]
-        zindex_score["zindex_distribution"] = zindex_distribution
-        zindex_score_map[candidate] = zindex_score
-        #zindex_score["update_datetime"] = datetime.utcnow()
-        #print("Requisition %s Candidate %s Inserting Zeroes [No Requisition]" %(requisition,candidate["candidate_id"] ))
-        #db.requisition_cand_zindex_scores.update(key,zindex_score,upsert=True)
-    return(zindex_score_map)
-
-def zindexScorer(reqParsed,candidate_id_list,db,idealSkills,requisition):
-
-    candResumeParsed = list(db.candidate_skills_from_parsed_resumes.find({"candidate_id":{"$in": candidate_id_list}}, {"candidate_id": 1, "parsedWords": 1, "_id": 0}))
-    candResumeList = []
-    for candidate in candResumeParsed:
-        candResumeList.append(candidate["candidate_id"])
-
-    zindex_score_map = {}
-    candNoResume = []
-    totalCandSubmission = set(candidate_id_list)
-    candWithResume = set(candResumeList)
-    candNoResume = list(totalCandSubmission-candWithResume)
-
-    reqParsedSkillList = []
-    reqParsedWordsList = []
-    for req_parsed in reqParsed:
-        for req_parsed_skill in req_parsed["parsedWords"]:
-            reqParsedWordsList.append(req_parsed_skill["word"].lower().strip())
-            if(req_parsed_skill["interpreter_value"]=="skills"):
-                reqParsedSkillList.append(req_parsed_skill["word"].lower().strip())
-
-    ###############################################
-    ###### Call worker for No Resume################
-    ###############################################
-
-    ###############################################
-    ## Call worker for candidates with Resume######
-    ###############################################
-
-    #workers = math.ceil(len(candidate_id_list) / 50)
-    workers = 2
-    work_queue = Queue()
-    done_queue = Queue()
-    work_queue_resume = Queue()
-    resume_mgr = Manager()
-    candidate_resume_parsed_mgr = resume_mgr.dict()
-    candidate_resume_parsed_mgr = candResumeParsed
-    done_queue_resume = Queue()
-    processes = []
-    processes_resume = []
-    for candidate in candNoResume:
-            work_queue.put(candidate)
-
-    for canddidate in candResumeParsed:
-        work_queue_resume.put(candidate)
-
-    for w in range(workers):
-        p = Process(target=workerNoResume, args=(work_queue, requisition, done_queue))
-        p_resume = Process(target=workerWithResume, args=(work_queue_resume, reqParsedSkillList,reqParsedWordsList,requisition,idealSkills, candidate_resume_parsed_mgr,done_queue_resume))
-        processes.append(p)
-        processes_resume.append(p_resume)
-        p.start()
-        p_resume.start()
-        #processes.append(p)
-        work_queue.put('STOP')
-        work_queue_resume.put('STOP')
-
-    for p in processes:
-        p.join()
-
-    for p in processes_resume:
-        p.join()
-
-    done_queue.put('STOP')
-    done_queue_resume.put('STOP')
-
-    ############################################################################
-    ####Combine the dict objects from both the workers into zindex_score_map####
-    ############################################################################
-    for scores in iter(done_queue.get, 'STOP'):
-        if( scores is None):
-            continue
-        zindex_score_map.update(scores)
-
-    for scores in iter(done_queue_resume.get, 'STOP'):
-        if( scores is None):
-            continue
-        zindex_score_map.update(scores)
-
-
     return(zindex_score_map)
 
 def scoreRetriever(reqId, candidate_id_list, score_collection_name):
@@ -259,4 +184,6 @@ def scoreRetriever(reqId, candidate_id_list, score_collection_name):
     idealSkills = idealSkillList['Skills']
     zindex_score_map = zindexScorer(reqParsed,candidate_id_list,db,idealSkills,reqId)
     return(zindex_score_map)
+	
+   
 
