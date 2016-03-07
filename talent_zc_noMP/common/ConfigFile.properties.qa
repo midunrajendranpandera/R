@@ -1,11 +1,11 @@
 [DatabaseSection]
-database.connection_string=mongodb://qacandidateuser:hpbVLH6j@qamongodb01.zcdev.local:27000,qamongodb02.zcdev.local:27000,qamongodb03.zcdev.local:27000/candidate_model_qajupiter
-database.dbname=candidate_model_qajupiter
+database.connection_string=mongodb://qacandidateuser:hpbVLH6j@qamongodb01.zcdev.local:27000,qamongodb02.zcdev.local:27000,qamongodb03.zcdev.local:27000/candidate_model_qapluto
+database.dbname=candidate_model_qapluto
 
 [SQLDatabaseSection]
-sql.connection_string="DRIVER={FreeTDSMT};SERVER=QAJupiterSQL02.zcdev.local;PORT=1433;TDS_Version=7.2;UID=qatalent;PWD=z2Z*@&k(1(;DATABASE=One"
+sql.connection_string="DRIVER={FreeTDSMT};SERVER=QAPlutoSQL01.zcdev.local;PORT=1433;TDS_Version=7.2;UID=qatalent;PWD=z2Z*@&k(1(;DATABASE=One"
 sql.driver={FreeTDSMT}
-sql.server=QAJupiterSQL02.zcdev.local
+sql.server=QAPlutoSQL01.zcdev.local
 sql.port=1433
 sql.tds_version=7.2
 sql.uid=qatalent
@@ -28,6 +28,6 @@ url.timeout=1800
 
 [ScoringParametersSection]
 HISTORY_MATCH_NOISE = 0.65
-HISTORY_WORDS_MATCH_NOISE = 0.65
-HISTORY_SKILLS_MATCH_NOISE = 1.0
-HISTORY_IDEAL_MATCH_NOISE = 0.65
+HISTORY_WORDS_MATCH_NOISE = 0.45
+HISTORY_SKILLS_MATCH_NOISE = 0.85
+HISTORY_IDEAL_MATCH_NOISE = 0.40

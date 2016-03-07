@@ -8,7 +8,7 @@ from parsedWords import ParsedWord
 from datetime import datetime
 from pymongo import MongoClient
 from debugException import DebugException
-from requisitionIncrementalScorer import requisitionIncrementalScorer
+#from requisitionIncrementalScorer import requisitionIncrementalScorer
 
 begin_time = datetime.utcnow()
 start_time = time.time()
@@ -96,7 +96,7 @@ try:
             if WRITE_TO_DB:
                 db.requisition_skills_from_parsed_requisition.update( { "requisition_id" : requisitionId }, mongoReq, upsert=True)
 
-            status = requisitionIncrementalScorer(requisitionId, db, log_file)
+            #status = requisitionIncrementalScorer(requisitionId, db, log_file)
             #After process completed, set the etl_process_flag to true indicating that the requisition incremental processing is complete
             db.requisition.update( {"requisition_id": requisitionId}, { "$set" : {"etl_process_flag" : True} } )
             log_file.write("[" + datetime.now().isoformat() + "] RequisitionId [" + str(requisitionId) + "] total elapsed Ttime [" + str(datetime.now() - reqBeginTime) + "]" + "\n")
