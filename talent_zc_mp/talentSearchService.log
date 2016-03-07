@@ -1,0 +1,109 @@
+Mon, 29 Feb 2016 12:12:48,346 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:12:48,395 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:12:48,443 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:12:48,460 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:12:48,512 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:12:48,515 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,832 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,855 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,887 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,898 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,923 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:10,925 root INFO     Running talent search service
+Mon, 29 Feb 2016 12:14:19,75 talentSearch INFO     [candidateScore]  CallStartTime [2016-02-29T12:14:19.075069]  reqId [190858]  isSubmitted [1]   masterSupplierId [0]  minScore [0]
+Mon, 29 Feb 2016 12:14:19,359 talentSearch INFO     [DebugInfo] -- [CandidateScore] Process Start [2016-02-29T12:14:19.075727]  End [2016-02-29T12:14:19.359527]   Elapsed [0:00:00.283797] seconds
+Mon, 29 Feb 2016 12:16:12,998 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-02-29T12:16:12.998551]  reqId [190679]  minScore []
+Mon, 29 Feb 2016 12:16:24,908 talentSearch INFO     EXCEPTION IN (./common/candidateScorer.py, LINE 209 "score_map = scoreRetriever(reqId, candidate_id_list, score_collection_name)"): 'NoneType' object is not subscriptable
+Mon, 29 Feb 2016 12:16:25,265 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [190679]   Process Start [2016-02-29T12:16:12.999143]  End [2016-02-29T12:16:25.265585]   Elapsed [0:00:12.266430] seconds
+Mon, 29 Feb 2016 12:17:39,1 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-02-29T12:17:39.001364]  reqId [190858]  minScore []
+Mon, 29 Feb 2016 12:17:59,80 talentSearch INFO     EXCEPTION IN (./common/candidateScorer.py, LINE 209 "score_map = scoreRetriever(reqId, candidate_id_list, score_collection_name)"): 'interpreter_value'
+Mon, 29 Feb 2016 12:18:05,873 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [190858]   Process Start [2016-02-29T12:17:39.001756]  End [2016-02-29T12:18:05.873621]   Elapsed [0:00:26.871852] seconds
+Mon, 29 Feb 2016 12:21:01,721 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-02-29T12:21:01.721487]  reqId [191992]  minScore []
+Mon, 29 Feb 2016 12:21:11,276 talentSearch INFO     EXCEPTION IN (./common/candidateScorer.py, LINE 209 "score_map = scoreRetriever(reqId, candidate_id_list, score_collection_name)"): 'interpreter_value'
+Mon, 29 Feb 2016 12:21:16,499 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-02-29T12:21:01.722110]  End [2016-02-29T12:21:16.499833]   Elapsed [0:00:14.777715] seconds
+Mon, 29 Feb 2016 16:09:30,984 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:31,4 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:31,68 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:31,78 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:31,490 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:31,493 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:09:38,412 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-02-29T16:09:38.412223]  reqId [191992]  minScore []
+Mon, 29 Feb 2016 16:10:07,723 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-02-29T16:09:38.412738]  End [2016-02-29T16:10:07.723007]   Elapsed [0:00:29.310252] seconds
+Mon, 29 Feb 2016 16:12:15,532 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-02-29T16:12:15.531869]  reqId [188181]  minScore []
+Mon, 29 Feb 2016 16:12:32,293 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [188181]   Process Start [2016-02-29T16:12:15.532328]  End [2016-02-29T16:12:32.293697]   Elapsed [0:00:16.761352] seconds
+Mon, 29 Feb 2016 16:14:57,983 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:14:58,18 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:14:58,53 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:14:58,64 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:14:58,119 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:14:58,122 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,576 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,607 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,640 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,651 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,689 root INFO     Running talent search service
+Mon, 29 Feb 2016 16:15:04,692 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,771 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,811 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,849 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,864 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,911 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:52:56,914 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,98 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,129 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,168 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,179 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,209 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:21,213 root INFO     Running talent search service
+Tue, 01 Mar 2016 15:53:37,63 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T15:53:37.063562]  reqId [188181]  minScore []
+Tue, 01 Mar 2016 15:53:54,83 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [188181]   Process Start [2016-03-01T15:53:37.064363]  End [2016-03-01T15:53:54.083076]   Elapsed [0:00:17.018701] seconds
+Tue, 01 Mar 2016 16:43:23,305 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:23,340 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:23,378 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:23,391 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:23,414 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:23,416 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:43:33,739 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T16:43:33.738892]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 16:43:43,354 talentSearch INFO     EXCEPTION IN (./common/candidateScorer.py, LINE 209 "score_map = scoreRetriever(reqId, candidate_id_list, score_collection_name)"): name 'Manager' is not defined
+Tue, 01 Mar 2016 16:44:22,147 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:22,181 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:22,213 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:22,233 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:22,259 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:22,261 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:44:32,31 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T16:44:32.031719]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 16:46:57,712 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T16:44:32.032529]  End [2016-03-01T16:46:57.712106]   Elapsed [0:02:25.679560] seconds
+Tue, 01 Mar 2016 16:55:57,178 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:55:57,206 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:55:57,239 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:55:57,250 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:55:57,275 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:55:57,278 root INFO     Running talent search service
+Tue, 01 Mar 2016 16:56:10,605 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T16:56:10.604951]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 16:57:26,493 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T16:56:10.605460]  End [2016-03-01T16:57:26.493460]   Elapsed [0:01:15.887972] seconds
+Tue, 01 Mar 2016 16:57:49,177 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T16:57:49.177229]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 16:59:13,718 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T16:57:49.177833]  End [2016-03-01T16:59:13.716744]   Elapsed [0:01:24.538884] seconds
+Tue, 01 Mar 2016 17:00:44,548 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:44,603 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:44,649 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:44,661 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:44,705 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:44,707 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:00:49,438 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T17:00:49.438242]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 17:01:10,260 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T17:00:49.438706]  End [2016-03-01T17:01:10.259815]   Elapsed [0:00:20.821091] seconds
+Tue, 01 Mar 2016 17:02:08,13 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:08,52 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:08,86 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:08,96 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:08,122 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:08,124 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:02:13,115 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T17:02:13.115629]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 17:02:32,244 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T17:02:13.116146]  End [2016-03-01T17:02:32.244363]   Elapsed [0:00:19.128209] seconds
+Tue, 01 Mar 2016 17:05:21,725 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:21,760 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:21,794 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:21,803 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:21,831 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:21,834 root INFO     Running talent search service
+Tue, 01 Mar 2016 17:05:28,732 talentSearch INFO     [SearchAndScore]  CallStartTime [2016-03-01T17:05:28.731792]  reqId [191992]  minScore []
+Tue, 01 Mar 2016 17:05:48,257 talentSearch INFO     [DebugInfo] -- [SearchAndScore] RequisitionId [191992]   Process Start [2016-03-01T17:05:28.732305]  End [2016-03-01T17:05:48.257162]   Elapsed [0:00:19.524845] seconds
