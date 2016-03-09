@@ -31,7 +31,7 @@ db.candidate_skills_from_parsed_resumes.createIndex(
 }
 );
 
-//  indx_name : "candidate_skills_parsed_resumes_CandidateID_ResumeId_InterpreterValue_UK2"
+//  indx_name : "candidate_skills_parsed_resumes_CandID_ResId_InterVal_UK2"
 db.candidate_skills_from_parsed_resumes.createIndex( 
 { 
   "candidate_id" : 1, 
@@ -39,7 +39,7 @@ db.candidate_skills_from_parsed_resumes.createIndex(
   "parsedWords.interpreter_value": 1 
 }, 
 { 
-  "name" : "candidate_skills_parsed_resumes_CandidateID_ResumeId_InterpreterValue_UK2", 
+  "name" : "candidate_skills_parsed_resumes_CandID_ResId_InterVal_UK2", 
   "unique" : true, 
   "background" : true
 }
