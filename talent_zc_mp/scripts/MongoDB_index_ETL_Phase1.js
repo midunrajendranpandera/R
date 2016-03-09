@@ -63,6 +63,52 @@ db.candidate.createIndex(
 }
 );
 
+// indx_name = "candidate_OptInTalentSearch_DnrsClientIds_IDX5"
+db.candidate.createIndex( 
+{ 
+  "opt_in_talent_search" : 1,
+  "dnr_client_ids" : 1
+}, 
+{ 
+  "name" : "candidate_OptInTalentSearch_DnrsClientIds_IDX5", 
+  "background" : true
+}
+);
+
+// indx_name = "candidate_AllowTalentCloudSearchForAllDivision_IDX6"
+db.candidate.createIndex( 
+{ 
+  "allow_talent_cloud_search_for_all_division" : 1
+}, 
+{ 
+  "name" : "candidate_AllowTalentCloudSearchForAllDivision_IDX6", 
+  "background" : true
+}
+);
+
+//indx_name = "candidate_CandidateDivisions_IDX7"
+db.candidate.createIndex( 
+{ 
+  "candidate_divisions.client_id" : 1
+}, 
+{ 
+  "name" : "candidate_CandidateDivisions_IDX7", 
+  "background" : true
+}
+);
+
+//indx_name = "candidate_MasterSupplierId_CandidateId_IDX8"
+db.candidate.createIndex( 
+{ 
+  "master_supplier_id" : 1,
+  "candidate_id" : 1
+}, 
+{ 
+  "name" : "candidate_MasterSupplierId_CandidateId_IDX8", 
+  "background" : true
+}
+);
+
 // ### Collection: requisition ###
 // indx_name="requisition_RequisitionId_UK1"
 db.requisition.createIndex( 
@@ -135,7 +181,7 @@ db.requisition.createIndex(
 );
 
 
-// ### Collection: candiate_resume_text ###
+// ### Collection: candidate_resume_text ###
 // indx_name = "candidate_resume_text_CandidateID_UK1"
 db.candidate_resume_text.createIndex( 
 { 
@@ -253,6 +299,7 @@ db.requisition_candidate.createIndex(
 }
 );
 
+
 // ### Collection: vendor ###
 // indx_name="vendor_ReqClientId_MasterSupplierId_VendorId_ClientID_IDX1"
 db.vendor.createIndex( 
@@ -264,6 +311,46 @@ db.vendor.createIndex(
 }, 
 { 
   "name" : "vendor_ReqClientId_MasterSupplierId_VendorId_ClientID_IDX1", 
+  "background" : true
+}
+);
+
+// ### Collection: vendor_master ###
+// indx_name="vendor_master_ClientId_TalentCloudAgreement_StatusId_IDX1"
+db.vendor_master.createIndex( 
+{ 
+  "client_id" : 1,
+  "talent_cloud_agreement" : 1,
+  "status_id" : 1  
+}, 
+{ 
+  "name" : "vendor_master_ClientId_TalentCloudAgreement_StatusId_IDX1", 
+  "background" : true
+}
+);
+
+// indx_name="vendor_master_ClientId_StatusId_IDX2"
+db.vendor_master.createIndex( 
+{ 
+  "client_id" : 1,
+  "status_id" : 1  
+}, 
+{ 
+  "name" : "vendor_master_ClientId_StatusId_IDX2", 
+  "background" : true
+}
+);
+
+//indx_name="vendor_master_ClientId_MasterSupplierId_TalentCloudAgreement_StatusId_IDX3"
+db.vendor_master.createIndex( 
+{ 
+  "client_id" : 1,
+  "master_supplier_id" : 1,
+  "status_id" : 1  ,
+  "talent_cloud_agreement" : 1
+}, 
+{ 
+  "name" : "vendor_master_ClientId_MasterSupplierId_TalentCloudAgreement_StatusId_IDX3", 
   "background" : true
 }
 );

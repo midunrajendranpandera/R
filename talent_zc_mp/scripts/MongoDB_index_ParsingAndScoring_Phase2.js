@@ -45,7 +45,17 @@ db.candidate_skills_from_parsed_resumes.createIndex(
 }
 );
 
+//indx_name = "candidate_skills_parsed_resumes_CandidateID_IDX1"
 
+db.candidate_skills_from_parsed_resumes.createIndex( 
+{ 
+  "candidate_id" : 1, 
+}, 
+{ 
+  "name" : "candidate_skills_parsed_resumes_CandidateID_IDX1", 
+  "background" : true
+}
+);
 
 // ### Collection: ideal_candidate_characteritics ###
 // indx_name="ideal_candidate_characteritics_GlobalJobCategoryId_UK1"
@@ -88,7 +98,7 @@ db.category_candidate_map.createIndex(
 
 // ### Collection: searchscore_cand_zindex_scores ###
 // indx_name="searchscore_cand_zindex_scores_RequisitionId_CandidateId_UK1"
-db.searchscore_cand_zindex_scores.createIndex( 
+/*db.searchscore_cand_zindex_scores.createIndex( 
 { 
   "requisition_id" : 1,
   "candidate_id" : 1
@@ -115,7 +125,7 @@ db.requisition_cand_zindex_scores.createIndex(
 }
 );
 
-
+*/
 
 // ### Collection: candidate_zindex_score ###
 //  indx_name : "candidate_zindex_score_RequisitionId_IDX1"
@@ -173,8 +183,7 @@ db.candidate_zindex_score_summary_audit.createIndex(
 db.etl_job_log.createIndex( 
 { 
   "job_name" : 1,
-  "start_datetime" : -1,
-  "end_date_time" : -1
+  "start_datetime" : -1
 }, 
 { 
   "name" : "etl_job_log_JobName_StartDatetime_EndDatetime_IDX1", 
