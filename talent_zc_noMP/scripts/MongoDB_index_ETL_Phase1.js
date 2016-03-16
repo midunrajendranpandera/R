@@ -75,39 +75,41 @@ db.candidate.createIndex(
 }
 );
 
-// indx_name = "candidate_AllowTalentCloudSearchForAllDivision_IDX6"
-db.candidate.createIndex( 
-{ 
-  "allow_talent_cloud_search_for_all_division" : 1
-}, 
-{ 
-  "name" : "candidate_AllowTalentCloudSearchForAllDivision_IDX6", 
-  "background" : true
-}
-);
-
-//indx_name = "candidate_CandidateDivisions_IDX7"
+//indx_name = "candidate_CandidateDivisions_IDX6"
 db.candidate.createIndex( 
 { 
   "candidate_divisions.client_id" : 1
 }, 
 { 
-  "name" : "candidate_CandidateDivisions_IDX7", 
+  "name" : "candidate_CandidateDivisions_IDX6", 
   "background" : true
 }
 );
 
-//indx_name = "candidate_MasterSupplierId_CandidateId_IDX8"
+//indx_name = "candidate_MasterSupplierId_CandidateId_IDX7"
 db.candidate.createIndex( 
 { 
   "master_supplier_id" : 1,
   "candidate_id" : 1
 }, 
 { 
-  "name" : "candidate_MasterSupplierId_CandidateId_IDX8", 
+  "name" : "candidate_MasterSupplierId_CandidateId_IDX7", 
   "background" : true
 }
 );
+
+/*
+// indx_name = "candidate_AllowTalentCloudSearchForAllDivision_IDX8"
+db.candidate.createIndex( 
+{ 
+  "allow_talent_cloud_search_for_all_division" : 1
+}, 
+{ 
+  "name" : "candidate_AllowTalentCloudSearchForAllDivision_IDX8", 
+  "background" : true
+}
+);
+*/
 
 // ### Collection: requisition ###
 // indx_name="requisition_RequisitionId_UK1"
