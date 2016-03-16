@@ -137,13 +137,15 @@ def mongoPreFilter(client_id):
     }
     candidate3 = list(db.candidate.find(query_dict).distinct("candidate_id"))
     query_dict = {
+            "candidate_id":{"$in":candidate3},
             "$or":[{"allow_talent_cloud_search_for_all_division": True},
                    {"allow_talent_cloud_search_for_all_division": False,"candidate_divisions.client_id": client_id, "candidate_divisions.active": True},
                 ]
     }
     candidate2 = list(db.candidate.find(query_dict).distinct("candidate_id"))
-    preFilterCandidate = list(set(candidate2).intersection(set(candidate3)))
-    finalCandidateList = list(db.candidate.find({ "candidate_id":{"$in":preFilterCandidate},"opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
+    #preFilterCandidate = list(set(candidate2).intersection(set(candidate3)))
+    finalCandidateList = list(db.candidate.find({ "candidate_id":{"$in":candidate2},"opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
+    #finalCandidateList = list(db.candidate.find({ "candidate_id":{"$in":preFilterCandidate},"opt_in_talent_search": 1 ,"dnr_client_ids": { "$ne":client_id}}).distinct("candidate_id"))
     return(finalCandidateList)
 
 	
