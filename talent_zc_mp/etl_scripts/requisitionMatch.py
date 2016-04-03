@@ -14,7 +14,7 @@ start_time = time.time()
 from pymongo import MongoClient
 
 config = configparser.ConfigParser()
-config.read('../common/ConfigFileQA.properties')
+config.read('../common/ConfigFile.properties')
 
 uri = config.get("DatabaseSection", "database.connection_string")
 db_name = config.get("DatabaseSection", "database.dbname")

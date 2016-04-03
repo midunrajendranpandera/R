@@ -30,12 +30,12 @@ fi
 
 
 #-- Kill incremental etl watchdogs
-kill -9 `pgrep -f subCandidateProcess.sh`
+#kill -9 `pgrep -f subCandidateProcess.sh`
 kill -9 `pgrep -f reqIncremental.sh`
 kill -9 `pgrep -f candidateIncremental.sh`
 
 #-- Kill incremental processes
-kill -9 `pgrep -f submitted_candidate_scoring.py`
+#kill -9 `pgrep -f submitted_candidate_scoring.py`
 kill -9 `pgrep -f requisitionIncremental.py`
 kill -9 `pgrep -f resumeParser.py`
 
@@ -87,15 +87,15 @@ fi
 
 cd $DEST_PATH/etl_scripts
  
-nohup sh subCandidateProcess.sh > $ETL_LOGS/subCandidateProcess.log &
+#nohup sh subCandidateProcess.sh > $ETL_LOGS/subCandidateProcess.log &
  
-pgrep -f subCandidateProcess.sh
-if [ $? -eq 0 ]; then
-   echo "Submitted Candidate Incremental Job Started Successfully"
-else
-   echo "Submitted Candidate Incremental has not started : $?"
-   exit 12
-fi
+#pgrep -f subCandidateProcess.sh
+#if [ $? -eq 0 ]; then
+#   echo "Submitted Candidate Incremental Job Started Successfully"
+#else
+#   echo "Submitted Candidate Incremental has not started : $?"
+#   exit 12
+#fi
  
 nohup sh reqIncremental.sh > $ETL_LOGS/reqIncremental.log &
  
