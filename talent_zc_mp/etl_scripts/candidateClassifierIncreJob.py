@@ -26,11 +26,11 @@ db = client[db_name]
 fetch_limit = 100
 JOB_NAME = "candidate_classifier"
 beginTime = datetime.now()
-#jobs = list(db.etl_job_log.find({"job_name": JOB_NAME}).sort("start_datetime", -1).limit(1))
-#for j in jobs:
-#    job = j
+jobs = list(db.etl_job_log.find({"job_name": JOB_NAME}).sort("start_datetime", -1).limit(1))
+for j in jobs:
+    job = j
 
-#lastRunDate = job["start_datetime"]
+lastRunDate = job["start_datetime"]
 # log_file = open("candidateClassifierJob.log", "a")
 etl_job_log = {}
 
@@ -38,25 +38,8 @@ etl_job_log = {}
 def obj_dict(self):
     return self.__dict__
 
+
 def matchSkills(cand_skills, req_skills, threshold):
-    req_skills_length = len(req_skills)
-    # print("matchSkills : "+ str(type(req_skills)))
-    req_skills_set = set(req_skills)
-    cand_skill_set = set(cand_skills)
-    try:
-        count = 0
-        candidate_match_count = len(list(cand_skill_set.intersection(req_skills_set)))
-        # print("matchSkills : candidate_match_count [" + str(candidate_match_count) + "]")
-        if candidate_match_count >= (threshold * req_skills_length):
-            # cand_skill_matched.append(req_skill)
-            return True
-
-    except Exception as e:
-        DebugException(e)
-
-    return False
-
-def matchSkills_new(cand_skills, req_skills, threshold):
     req_skills_length = len(req_skills)
     cand_skills_length = len(cand_skills)
     # print("matchSkills : "+ str(type(req_skills)))
@@ -139,32 +122,26 @@ def candidate_classifier_incre(in_candidate,characteristic_list):
     try:
         cand_table = db["candidate"]
         #characteristic_list = getCharacteristicMap()
-        category_map.update_many({},{"$pull":{"candidates":in_candidate}},True)
+        db.category_map.update_many({},{"$pull":{"candidates":in_candidate}},True)
         #print("[candidateClassifierJob] ---query Time: %s seconds ---" % (time.time() - start_time))
         skip_amount = 0
         cand_count = 0
 
         # Get candidate List
-        #total_cand = cand_table.find(
-        #    {"$or": [{"loaded_date": {"$gt": lastRunDate}}, {"update_date": {"$gt": lastRunDate}}]}).count()
-
-        total_cand = cand_table.find({"candidate_id": in_candidate}).count()
-
+        total_cand = cand_table.find(
+            {"$or": [{"loaded_date": {"$gt": lastRunDate}}, {"update_date": {"$gt": lastRunDate}}]}).count()
         # print("[candidateClassifierJob] [TotalCandidates]  %s" % total_cand)
-
         start_delta = 0
 
-        #query_dict = {
-        #    "$and": [
-        #        {"candidate_id": in_candidate},
-        #        {"$or": [
-        #            {"loaded_date": {"$gt": lastRunDate}},
-        #            {"update_date": {"$gt": lastRunDate}}
-        #        ]},
-        #    ]
-        #}
-
-        query_dict = {"candidate_id": in_candidate}
+        query_dict = {
+            "$and": [
+                {"candidate_id": in_candidate},
+                {"$or": [
+                    {"loaded_date": {"$gt": lastRunDate}},
+                    {"update_date": {"$gt": lastRunDate}}
+                ]},
+            ]
+        }
 
         proj_dict = {"candidate_id": 1, "job_skill_names": 1}
 

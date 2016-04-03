@@ -31,14 +31,13 @@ def candResumeParser(resumeSkill):
         global matchCount
         wordcount = {}
         global count
-        #count += 1
+        count += 1
         #print("Running "+ str(count))
         #print(str(resumeLine))
         resumeText = resumeLine["resume_text"]
         #print("Text - %s" % resumeText)
         if resumeText is not None and resumeText is not "":
             candidateId = resumeLine["candidate_id"]
-            #print(candidateId)
             resumeId = resumeLine["resume_id"]
             dataCenter = resumeLine["date_center"]
             currentResumeResult = ResumeResult(resumeId, candidateId, dataCenter)
@@ -65,17 +64,7 @@ def candResumeParser(resumeSkill):
             for word, match_count in wordcount.items():
                 currentResumeResult.parsedWords.append(ParsedWord(word, match_count, 0))
 
-            ##Append the Candidate Skills to Resume
-            candidateSkill = []
-            candidateSkill = list(db.candidate.find({"candidate_id":candidateId}, {"candidate_id":1,"job_skill_names": 1,"_id":0}))
-            for skillList in candidateSkill:
-                for skills in skillList["job_skill_names"]:
-                    skillTemp = {}
-                    skillTemp["count"] = 1
-                    skillTemp["word"] = skills["job_skill_name"].lower().strip()
-                    skillTemp["interpreter_value"] = 'skills'
-                    #print(skillTemp)
-                    currentResumeResult.parsedWords.append(skillTemp)
+
             resumeJSON = json.dumps(currentResumeResult, default=obj_dict)
             mongoResume = json.loads(resumeJSON)
 

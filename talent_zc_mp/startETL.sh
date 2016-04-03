@@ -4,15 +4,15 @@
 
 cd ./etl_scripts
  
-#nohup sh subCandidateProcess.sh > $ETL_LOGS/subCandidateProcess.log &
+nohup sh subCandidateProcess.sh > $ETL_LOGS/subCandidateProcess.log &
  
-#pgrep -f subCandidateProcess.sh
-#if [ $? -eq 0 ]; then
-#   echo "Submitted Candidate Incremental Job Started Successfully"
-#else
-#   echo "Submitted Candidate Incremental has not started : $?"
-#   exit 12
-#fi
+pgrep -f subCandidateProcess.sh
+if [ $? -eq 0 ]; then
+   echo "Submitted Candidate Incremental Job Started Successfully"
+else
+   echo "Submitted Candidate Incremental has not started : $?"
+   exit 12
+fi
  
 nohup sh reqIncremental.sh > $ETL_LOGS/reqIncremental.log &
  
